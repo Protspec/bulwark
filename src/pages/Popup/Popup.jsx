@@ -97,22 +97,21 @@ function Popup() {
     }
 
     let queryOptions = { active: true, currentWindow: true };
-    chrome.tabs.query(queryOptions, async ([tab]) => {
-      const url = new URL(tab.url);
+    chrome.tabs.query(queryOptions, (tabs) => {
+      const url = new URL(tabs[0].url);
       setHostname(url.hostname.toLowerCase());
       setPathname(url.pathname.toLowerCase());
 
-      chrome.scripting.executeScript(
-        {
-          target: { tabId: tab.id },
+      chrome.scripting
+        .executeScript({
+          target: { tabId: tabs[0].id },
           function: getDOMContent,
-        },
-        (results) => {
+        })
+        .then((results) => {
           setTitle(results[0].result[0]);
           setContent(results[0].result[1]);
           setOgUrl(results[0].result[2]);
-        }
-      );
+        });
     });
   }, []);
 
@@ -174,10 +173,12 @@ function Popup() {
   };
 
   const getDOMContent = () => {
+    const metaOgUrl = document.querySelector('meta[property="og:url"]');
+
     return [
       document.title.toLowerCase(),
       document.body.textContent.toLowerCase(),
-      document.querySelectorAll('meta[property="og:url"]')[0].content,
+      metaOgUrl !== null && metaOgUrl.content,
     ];
   };
 
@@ -224,7 +225,7 @@ function Popup() {
         <a href="https://protspec.com" target="_blank">
           <img src={logo} className="App-logo" alt="Bulwark logo" />
         </a>
-        <span class="scam-count">
+        <span className="scam-count">
           <img src={textSkull} className="count-icon" alt="Skull" />
           <strong>{scamSites && scamSites.length}</strong>
         </span>
