@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Bulwark",
-  "description": "Based crypto scam website detector",
+  "description": "Crypto scam detection for cryptonatives",
   "options_ui": {
     "page": "options.html",
     "open_in_tab": true
