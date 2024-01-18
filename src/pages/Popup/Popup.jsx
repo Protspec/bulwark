@@ -9,6 +9,7 @@ const INITIAL_CONDITIONS = {
   'Detected in top-level domain': null,
   'Detected in pathname': null,
   'Detected in title': null,
+  'Detected in metadata': null,
   'Detected in HTML': null,
 };
 
@@ -159,9 +160,9 @@ function Popup() {
     ),
     'Detected in title':
       title && SUS_KEYWORDS.some((keyword) => title.includes(keyword)),
+    'Detected in metadata': ogUrl && !ogUrl.includes(hostname),
     'Detected in HTML':
-      (content && SUS_KEYWORDS.some((keyword) => content.includes(keyword))) ||
-      (ogUrl && !ogUrl.includes(hostname)),
+      content && SUS_KEYWORDS.some((keyword) => content.includes(keyword)),
   });
 
   const determineGrade = (updatedConditions) => {
