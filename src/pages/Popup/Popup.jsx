@@ -225,7 +225,10 @@ function Popup() {
         <a href="https://protspec.com" target="_blank">
           <img src={logo} className="App-logo" alt="Bulwark logo" />
         </a>
-        <span className="scam-count">
+        <span
+          className="scam-count"
+          data-text="Scams detected from your visits"
+        >
           <img src={textSkull} className="count-icon" alt="Skull" />
           <strong>{scamSites && scamSites.length}</strong>
         </span>

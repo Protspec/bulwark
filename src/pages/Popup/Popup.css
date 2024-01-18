@@ -157,6 +157,32 @@ h1.domain span {
   top: 1px;
 }
 
+.scam-count {
+  position:relative;
+}
+
+.scam-count:before {
+  content: attr(data-text);
+  position: absolute;
+  bottom: 10px;
+  right: 0;
+  width: 180px;
+  transform:translateY(-50%);
+  text-align: center;
+  font-size: 12px;
+  padding: 2px;
+  background: rgba(255,255,255,0.1);
+  color: #e1e1e1;
+  text-shadow: 0 1px 2px #000;
+  opacity: 0;
+  transition: opacity 0.1s ease-in;
+  pointer-events: none;
+}
+
+.scam-count:hover:before {
+  opacity: 1;
+}
+
 @keyframes danger {
   0% {
     opacity: 1;
