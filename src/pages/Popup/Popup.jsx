@@ -149,7 +149,8 @@ function Popup() {
     ...conditions,
     'Detected in domain':
       hostname.split('.').some((part) => /-/.test(part)) ||
-      SUS_KEYWORDS.some((keyword) => hostname.includes(keyword)),
+      SUS_KEYWORDS.some((keyword) => hostname.includes(keyword)) ||
+      /^([^.]+\.){3,}/.test(hostname),
     'Detected in top-level domain': SUS_TLDS.some((tld) =>
       hostname.split('.').slice(-2).join('.').endsWith(tld)
     ),
