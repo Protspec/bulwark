@@ -67,6 +67,7 @@ function Popup() {
   const [blocklist, setBlocklist] = useState(null);
   const [blocked, setBlocked] = useState(null);
   const [scamSites, setScamSites] = useState(null);
+  const [isIncognito, setIsIncognito] = useState(true);
 
   fetch(
     'https://raw.githubusercontent.com/phishfort/phishfort-lists/master/blacklists/hotlist.json'
@@ -86,6 +87,8 @@ function Popup() {
     });
 
   useEffect(() => {
+    setIsIncognito(chrome.windows.getCurrent.isIncognito);
+
     if (scamSites === null) {
       chrome.storage.sync.get(['scamSites'], (result) => {
         if (result.scamSites) {
@@ -128,7 +131,7 @@ function Popup() {
     setGrade(determinedGrade);
     setBlocked(blocklist.some((blocklist) => hostname.includes(blocklist)));
 
-    if (isPhishingGrade(grade) || blocked) {
+    if ((isPhishingGrade(grade) || blocked) && !isIncognito) {
       let newScamSites = [...scamSites, hostname];
 
       if (scamSites.length === 0) {
@@ -227,7 +230,7 @@ function Popup() {
         </a>
         <span
           className="scam-count"
-          data-text="Scams detected from your visits"
+          data-text="Scams detected from your visits (not including Incognito visits)"
         >
           <img src={textSkull} className="count-icon" alt="Skull" />
           <strong>{scamSites && scamSites.length}</strong>
