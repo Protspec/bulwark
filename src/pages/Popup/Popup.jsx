@@ -11,6 +11,7 @@ const INITIAL_CONDITIONS = {
   'Detected in title': null,
   'Detected in metadata': null,
   'Detected in HTML': null,
+  'Detected in JavaScript': null,
 };
 
 const SUS_KEYWORDS = [
@@ -37,6 +38,8 @@ const SUS_KEYWORDS = [
   'victim',
   'poor',
 ];
+
+const JS_KEYWORDS = ['drain', 'victim', 'victim', 'poor', 'seaport'];
 
 const SUS_TLDS = [
   '.ru',
@@ -68,6 +71,7 @@ function Popup() {
   const [title, setTitle] = useState(null);
   const [content, setContent] = useState(null);
   const [metaTags, setMetaTags] = useState([null]);
+  const [jsTags, setJsTags] = useState(null);
   const [blocklist, setBlocklist] = useState(null);
   const [blocked, setBlocked] = useState(null);
   const [scamSites, setScamSites] = useState(null);
@@ -92,45 +96,57 @@ function Popup() {
     });
 
   useEffect(() => {
-    setIsIncognito(chrome.windows.getCurrent.isIncognito);
+    if (grade === null || !isDone) {
+      setIsIncognito(chrome.windows.getCurrent.isIncognito);
 
-    if (scamSites === null) {
-      chrome.storage.sync.get(['scamSites'], (result) => {
-        if (result.scamSites) {
-          setScamSites(result.scamSites);
-        } else {
-          setScamSites([]);
-        }
-      });
-    }
+      if (scamSites === null) {
+        chrome.storage.sync.get(['scamSites'], (result) => {
+          if (result.scamSites) {
+            setScamSites(result.scamSites);
+          } else {
+            setScamSites([]);
+          }
+        });
+      }
 
-    let queryOptions = { active: true, currentWindow: true };
-    chrome.tabs.query(queryOptions, (tabs) => {
-      const url = new URL(tabs[0].url);
-      setHostname(url.hostname.toLowerCase());
-      setPathname(url.pathname.toLowerCase());
+      let queryOptions = { active: true, currentWindow: true };
+      chrome.tabs.query(queryOptions, (tabs) => {
+        const url = new URL(tabs[0].url);
+        setHostname(url.hostname.toLowerCase());
+        setPathname(url.pathname.toLowerCase());
 
-      chrome.scripting
-        .executeScript({
+        chrome.scripting.executeScript({
           target: { tabId: tabs[0].id },
           function: getDOMContent,
-        })
-        .then((results) => {
-          setTitle(results[0].result[0]);
-          setContent(results[0].result[1]);
-          setMetaTags(results[0].result[2]);
         });
-    });
+      });
+    }
   }, []);
 
-  useEffect(() => {
-    if ((hostname || pathname) && blocklist) {
-      evaluateUrl(hostname, pathname);
-    }
-  }, [hostname, blocklist]);
+  const handleMessage = (message, sender, sendResponse) => {
+    const results = message.results;
+    if (results) {
+      const [title, content, metaTags, scriptContents] = results;
+      setTitle(title);
+      setContent(content);
+      setMetaTags(metaTags);
+      setJsTags(scriptContents);
 
-  const evaluateUrl = (hostname, pathname) => {
-    const updatedConditions = getUpdatedConditions(hostname, pathname);
+      chrome.runtime.onMessage.removeListener(handleMessage);
+    }
+  };
+
+  chrome.runtime.onMessage.addListener(handleMessage);
+
+  useEffect(() => {
+    if (grade === null && blocklist && jsTags) {
+      evaluateUrl(hostname, pathname, jsTags);
+    }
+  }, [hostname, blocklist, jsTags]);
+
+  const evaluateUrl = (hostname, pathname, jsTags) => {
+    console.log(jsTags);
+    const updatedConditions = getUpdatedConditions(hostname, pathname, jsTags);
     const determinedGrade = determineGrade(updatedConditions);
     setConditions(updatedConditions);
     setGrade(determinedGrade);
@@ -152,7 +168,7 @@ function Popup() {
     setIsDone(true);
   };
 
-  const getUpdatedConditions = (hostname, pathname) => ({
+  const getUpdatedConditions = (hostname, pathname, jsTags) => ({
     ...conditions,
     'Detected in domain':
       hostname.split('.').some((part) => /-/.test(part)) ||
@@ -173,6 +189,7 @@ function Popup() {
       false,
     'Detected in HTML':
       content && SUS_KEYWORDS.some((keyword) => content.includes(keyword)),
+    'Detected in JavaScript': jsTags ? jsCheck(jsTags, JS_KEYWORDS) : false,
   });
 
   const determineGrade = (updatedConditions) => {
@@ -187,7 +204,7 @@ function Popup() {
     return phishingGrades.includes(grade);
   };
 
-  const getDOMContent = () => {
+  const getDOMContent = async () => {
     const metaOgUrl = document.querySelector('meta[property="og:url"]');
     const saveUrl = document.querySelector('meta[name="savepage-url"]');
     const scrapUrl = document
@@ -195,16 +212,49 @@ function Popup() {
       .getAttribute('data-scrapbook-source');
 
     const domMetaTags = [
-      metaOgUrl !== null ? metaOgUrl.content : null,
-      saveUrl !== null ? saveUrl.content : null,
-      scrapUrl !== null ? scrapUrl : null,
+      metaOgUrl ? metaOgUrl.content : null,
+      saveUrl ? saveUrl.content : null,
+      scrapUrl || null,
     ];
 
-    return [
+    const scripts = Array.from(document.querySelectorAll('script[src]'));
+    const host = window.location.host;
+    const scriptPromises = scripts
+      .filter(
+        (script) =>
+          script.src.toLowerCase().includes(host) &&
+          !script.src.toLowerCase().includes('_next')
+      )
+      .map((script) =>
+        fetch(script.src)
+          .then((response) => response.text())
+          .catch((error) => null)
+      );
+
+    const scriptContents = await Promise.all(scriptPromises);
+
+    const results = [
       document.title.toLowerCase(),
       document.body.textContent.toLowerCase(),
       domMetaTags,
+      scriptContents,
     ];
+
+    chrome.runtime.sendMessage({ results });
+  };
+
+  const jsCheck = (scripts, keywords) => {
+    let result = false;
+    scripts.forEach((script) => {
+      if (keywords.some((keyword) => script.toLowerCase().includes(keyword))) {
+        console.log('keyword found');
+        result = true;
+      } else {
+        console.log('keyword not found');
+      }
+    });
+
+    return result;
   };
 
   return (
