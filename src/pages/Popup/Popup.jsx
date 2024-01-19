@@ -33,6 +33,9 @@ const SUS_KEYWORDS = [
   'embrace',
   'kindly',
   'migrat',
+  'claim',
+  'victim',
+  'poor',
 ];
 
 const SUS_TLDS = [
