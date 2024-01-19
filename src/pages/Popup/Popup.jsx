@@ -64,11 +64,12 @@ function Popup() {
   const [pathname, setPathname] = useState(null);
   const [title, setTitle] = useState(null);
   const [content, setContent] = useState(null);
-  const [ogUrl, setOgUrl] = useState(null);
+  const [metaTags, setMetaTags] = useState([null]);
   const [blocklist, setBlocklist] = useState(null);
   const [blocked, setBlocked] = useState(null);
   const [scamSites, setScamSites] = useState(null);
   const [isIncognito, setIsIncognito] = useState(true);
+  const [isDone, setIsDone] = useState(false);
 
   fetch(
     'https://raw.githubusercontent.com/phishfort/phishfort-lists/master/blacklists/hotlist.json'
@@ -114,7 +115,7 @@ function Popup() {
         .then((results) => {
           setTitle(results[0].result[0]);
           setContent(results[0].result[1]);
-          setOgUrl(results[0].result[2]);
+          setMetaTags(results[0].result[2]);
         });
     });
   }, []);
@@ -144,6 +145,8 @@ function Popup() {
         setScamSites(newScamSites);
       }
     }
+
+    setIsDone(true);
   };
 
   const getUpdatedConditions = (hostname, pathname) => ({
@@ -160,7 +163,10 @@ function Popup() {
     ),
     'Detected in title':
       title && SUS_KEYWORDS.some((keyword) => title.includes(keyword)),
-    'Detected in metadata': ogUrl && !ogUrl.includes(hostname),
+    'Detected in metadata':
+      (metaTags[0] !== null && !metaTags[0].includes(hostname)) ||
+      metaTags[1] ||
+      false,
     'Detected in HTML':
       content && SUS_KEYWORDS.some((keyword) => content.includes(keyword)),
   });
@@ -179,11 +185,16 @@ function Popup() {
 
   const getDOMContent = () => {
     const metaOgUrl = document.querySelector('meta[property="og:url"]');
+    const saveUrl = document.querySelector('meta[name="savepage-url"]');
+    const domMetaTags = [
+      metaOgUrl !== null ? metaOgUrl.content : null,
+      saveUrl !== null ? saveUrl.content : null,
+    ];
 
     return [
       document.title.toLowerCase(),
       document.body.textContent.toLowerCase(),
-      metaOgUrl !== null && metaOgUrl.content,
+      domMetaTags,
     ];
   };
 
@@ -230,10 +241,7 @@ function Popup() {
         <a href="https://protspec.com" target="_blank">
           <img src={logo} className="App-logo" alt="Bulwark logo" />
         </a>
-        <span
-          className="scam-count"
-          data-text="Scams detected from your visits (not including Incognito visits)"
-        >
+        <span className="scam-count" data-text="Scams detected">
           <img src={textSkull} className="count-icon" alt="Skull" />
           <strong>{scamSites && scamSites.length}</strong>
         </span>
