@@ -169,6 +169,7 @@ function Popup() {
     'Detected in metadata':
       (metaTags[0] !== null && !metaTags[0].includes(hostname)) ||
       metaTags[1] ||
+      metaTags[2] ||
       false,
     'Detected in HTML':
       content && SUS_KEYWORDS.some((keyword) => content.includes(keyword)),
@@ -189,9 +190,14 @@ function Popup() {
   const getDOMContent = () => {
     const metaOgUrl = document.querySelector('meta[property="og:url"]');
     const saveUrl = document.querySelector('meta[name="savepage-url"]');
+    const scrapUrl = document
+      .querySelector('html')
+      .getAttribute('data-scrapbook-source');
+
     const domMetaTags = [
       metaOgUrl !== null ? metaOgUrl.content : null,
       saveUrl !== null ? saveUrl.content : null,
+      scrapUrl !== null ? scrapUrl : null,
     ];
 
     return [
