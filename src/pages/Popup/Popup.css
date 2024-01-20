@@ -8,14 +8,22 @@
   padding: 8px;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(180deg, rgba(255,255,255,0.1) 0%, rgba(0,0,0,1) 50%);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(0, 0, 0, 1) 50%
+  );
   background-color: #0a1114;
   color: #e1e1e1;
   text-shadow: 0 1px 2px #000;
 }
 
 .App.is-phishing {
-  background: linear-gradient(180deg, rgba(237,46,21,0.3) 0%, rgba(12,0,0,1) 50%);
+  background: linear-gradient(
+    180deg,
+    rgba(237, 46, 21, 0.3) 0%,
+    rgba(12, 0, 0, 1) 50%
+  );
   background-color: #0a1114;
 }
 
@@ -30,7 +38,8 @@ strong {
   font-weight: 600;
 }
 
-ul, li {
+ul,
+li {
   list-style-type: none;
   text-align: left;
   margin: 0;
@@ -53,7 +62,7 @@ h1 {
 
 h3.is-scam {
   font-size: 32px;
-  color: #ED2E15;
+  color: #ed2e15;
   font-weight: 600;
   text-transform: uppercase;
   text-align: center;
@@ -70,7 +79,7 @@ p.is-scam {
   text-align: center;
   font-size: 16px;
   font-weight: 600;
-  color: #ED2E15;
+  color: #ed2e15;
 }
 
 p.is-benign {
@@ -90,7 +99,7 @@ h1.domain {
 }
 
 h1.domain span {
-  background: rgba(0,0,0,0.75);
+  background: rgba(0, 0, 0, 0.75);
   display: inline-block;
   padding: 4px 16px;
   border: 1px solid #e1e1e1;
@@ -102,8 +111,8 @@ h1.domain span {
 }
 
 .App.is-phishing h1.domain span {
-  border-color: #ED2E15;
-  color: #ED2E15;
+  border-color: #ed2e15;
+  color: #ed2e15;
 }
 
 .App-header {
@@ -134,7 +143,7 @@ h1.domain span {
 }
 
 .footer strong {
-  opacity: 0.5;;
+  opacity: 0.5;
 }
 
 .count-icon {
@@ -158,7 +167,7 @@ h1.domain span {
 }
 
 .scam-count {
-  position:relative;
+  position: relative;
 }
 
 .scam-count:before {
@@ -167,11 +176,11 @@ h1.domain span {
   bottom: 10px;
   right: 0;
   width: 180px;
-  transform:translateY(-50%);
+  transform: translateY(-50%);
   text-align: center;
   font-size: 12px;
   padding: 2px;
-  background: rgba(255,255,255,0.1);
+  background: rgba(255, 255, 255, 0.1);
   color: #e1e1e1;
   text-shadow: 0 1px 2px #000;
   opacity: 0;
@@ -186,15 +195,15 @@ h1.domain span {
 @keyframes danger {
   0% {
     opacity: 1;
-    filter: drop-shadow(0 1px 4px rgba(237,46,21,1));
+    filter: drop-shadow(0 1px 4px rgba(237, 46, 21, 1));
   }
   50% {
     opacity: 0.7;
-    filter: drop-shadow(0 1px 4px rgba(237,46,21,0));
+    filter: drop-shadow(0 1px 4px rgba(237, 46, 21, 0));
   }
 
   to {
     opacity: 1;
-    filter: drop-shadow(0 1px 4px rgba(237,46,21,1));
+    filter: drop-shadow(0 1px 4px rgba(237, 46, 21, 1));
   }
 }
