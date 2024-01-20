@@ -39,7 +39,7 @@ const SUS_KEYWORDS = [
   'poor',
 ];
 
-const JS_KEYWORDS = ['drain', 'victim', 'victim', 'poor', 'seaport'];
+const JS_KEYWORDS = ['drain', 'victim', 'seaport'];
 
 const SUS_TLDS = [
   '.ru',
@@ -249,12 +249,20 @@ function Popup() {
   const jsCheck = (scripts, keywords) => {
     let result = false;
     scripts.forEach((script) => {
-      if (keywords.some((keyword) => script.toLowerCase().includes(keyword))) {
-        console.log('keyword found');
-        result = true;
-      } else {
+      keywords.some((keyword) => {
+        if (script.toLowerCase().includes(keyword)) {
+          if (
+            keyword == 'drain' &&
+            script.includes('drainKeysFoundInLookupTable')
+          ) {
+            console.log('drain keyword found but likely solana project');
+          } else {
+            console.log('keyword found');
+            result = true;
+          }
+        }
         console.log('keyword not found');
-      }
+      });
     });
 
     return result;
