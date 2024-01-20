@@ -221,19 +221,35 @@ function Popup() {
 
     const scripts = Array.from(document.querySelectorAll('script[src]'));
     const host = window.location.host;
-    const scriptPromises = scripts
-      .filter(
-        (script) =>
-          script.src.toLowerCase().includes(host) &&
-          !script.src.toLowerCase().includes('_next')
-      )
-      .map((script) =>
-        fetch(script.src)
-          .then((response) => response.text())
-          .catch((error) => null)
-      );
+    const scriptPromises = [];
 
-    const scriptContents = await Promise.all(scriptPromises);
+    scripts.forEach((script) => {
+      if (
+        script.src.toLowerCase().includes(host) &&
+        !script.src.toLowerCase().includes('_next')
+      ) {
+        const promise = fetch(script.src)
+          .then((response) => {
+            if (!response.ok) {
+              // If the response is not successful (including CORS errors), don't process further.
+              throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.text();
+          })
+          .catch((error) => {
+            // Log the error, but don't add a rejected promise to `scriptPromises`.
+            console.error('Error fetching script:', error);
+          });
+
+        // Only add promises that we know will either resolve successfully or not be added at all.
+        scriptPromises.push(promise);
+      }
+    });
+
+    // Filter out any undefined entries due to failed fetches before waiting for all promises.
+    const scriptContents = (await Promise.all(scriptPromises)).filter(
+      (content) => content !== undefined
+    );
 
     console.log(scriptContents);
     const results = [
