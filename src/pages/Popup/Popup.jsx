@@ -76,28 +76,30 @@ function Popup() {
   const [blocked, setBlocked] = useState(null);
   const [scamSites, setScamSites] = useState(null);
   const [isIncognito, setIsIncognito] = useState(true);
-  const [isDone, setIsDone] = useState(false);
-
-  fetch(
-    'https://raw.githubusercontent.com/phishfort/phishfort-lists/master/blacklists/hotlist.json'
-  )
-    .then(function (response) {
-      if (response.status !== 200) {
-        console.log(response.status);
-        return;
-      }
-
-      response.json().then(function (data) {
-        setBlocklist(data);
-      });
-    })
-    .catch(function (err) {
-      console.log('Fetch Error: ', err);
-    });
+  const [started, setStarted] = useState(false);
 
   useEffect(() => {
-    if (grade === null || !isDone) {
+    if (grade === null || !started) {
+      setStarted(true);
       setIsIncognito(chrome.windows.getCurrent.isIncognito);
+
+      fetch(
+        'https://raw.githubusercontent.com/phishfort/phishfort-lists/master/blacklists/hotlist.json'
+      )
+        .then(function (response) {
+          console.log('fetched');
+          if (response.status !== 200) {
+            console.log(response.status);
+            return;
+          }
+
+          response.json().then(function (data) {
+            setBlocklist(data);
+          });
+        })
+        .catch(function (err) {
+          console.log('Fetch Error: ', err);
+        });
 
       if (scamSites === null) {
         chrome.storage.sync.get(['scamSites'], (result) => {
@@ -120,10 +122,12 @@ function Popup() {
           function: getDOMContent,
         });
       });
+      chrome.runtime.onMessage.addListener(handleMessage);
     }
   }, []);
 
   const handleMessage = (message, sender, sendResponse) => {
+    console.log('message');
     const results = message.results;
     if (results) {
       const [title, content, metaTags, scriptContents] = results;
@@ -131,12 +135,11 @@ function Popup() {
       setContent(content);
       setMetaTags(metaTags);
       setJsTags(scriptContents);
+      console.log(metaTags);
 
       chrome.runtime.onMessage.removeListener(handleMessage);
     }
   };
-
-  chrome.runtime.onMessage.addListener(handleMessage);
 
   useEffect(() => {
     if (grade === null && blocklist && jsTags) {
@@ -145,7 +148,6 @@ function Popup() {
   }, [hostname, blocklist, jsTags]);
 
   const evaluateUrl = (hostname, pathname, jsTags) => {
-    console.log(jsTags);
     const updatedConditions = getUpdatedConditions(hostname, pathname, jsTags);
     const determinedGrade = determineGrade(updatedConditions);
     setConditions(updatedConditions);
@@ -164,8 +166,6 @@ function Popup() {
         setScamSites(newScamSites);
       }
     }
-
-    setIsDone(true);
   };
 
   const getUpdatedConditions = (hostname, pathname, jsTags) => ({
@@ -183,7 +183,9 @@ function Popup() {
     'Detected in title':
       title && SUS_KEYWORDS.some((keyword) => title.includes(keyword)),
     'Detected in metadata':
-      (metaTags[0] !== null && !metaTags[0].includes(hostname)) ||
+      (metaTags[0] !== null &&
+        !metaTags[0].includes(hostname) &&
+        metaTags[0] !== '/') ||
       metaTags[1] ||
       metaTags[2] ||
       false,
@@ -233,6 +235,7 @@ function Popup() {
 
     const scriptContents = await Promise.all(scriptPromises);
 
+    console.log(scriptContents);
     const results = [
       document.title.toLowerCase(),
       document.body.textContent.toLowerCase(),
