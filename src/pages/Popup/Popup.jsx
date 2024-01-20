@@ -114,7 +114,7 @@ function Popup() {
 
         chrome.scripting.executeScript({
           target: { tabId: tabs[0].id },
-          function: getDOMContent,
+          function: invokeContentScript,
         });
       });
       chrome.runtime.onMessage.addListener(handleMessage);
@@ -150,8 +150,6 @@ function Popup() {
     setBlocked(blocklist.some((blocklist) => hostname.includes(blocklist)));
 
     if ((isPhishingGrade(grade) || blocked) && !isIncognito) {
-      let newScamSites = [...scamSites, hostname];
-
       if (scamSites.length === 0) {
         chrome.storage.sync.set({ scamSites: [hostname] });
         setScamSites([hostname]);
@@ -201,7 +199,7 @@ function Popup() {
     return phishingGrades.includes(grade);
   };
 
-  const getDOMContent = async () => {
+  const invokeContentScript = async () => {
     const metaOgUrl = document.querySelector('meta[property="og:url"]');
     const saveUrl = document.querySelector('meta[name="savepage-url"]');
     const scrapUrl = document
