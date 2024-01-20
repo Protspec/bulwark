@@ -15,13 +15,8 @@ const INITIAL_CONDITIONS = {
 };
 
 const SUS_KEYWORDS = [
-  'usdc',
-  'usdt',
   'whitelist',
   'airdrop',
-  'apecoin',
-  'starknet',
-  'celestia',
   'unprecedented',
   'potential',
   'embrace',
