@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import './Popup.css';
 import logo from '../../assets/img/logo.svg';
 import skull from '../../assets/img/skull.svg';
@@ -73,6 +73,105 @@ function Popup() {
   const [isIncognito, setIsIncognito] = useState(true);
   const [started, setStarted] = useState(false);
 
+  const handleMessage = (message, sender, sendResponse) => {
+    console.log('message');
+    const results = message.results;
+    if (results) {
+      const [title, content, metaTags, scriptContents] = results;
+      setTitle(title);
+      setContent(content);
+      setMetaTags(metaTags);
+      setJsTags(scriptContents);
+      console.log(metaTags);
+
+      chrome.runtime.onMessage.removeListener(handleMessage);
+    }
+  };
+
+  const jsCheck = useCallback(() => {
+    const keywords = JS_KEYWORDS;
+    let result = false;
+    jsTags.forEach((script) => {
+      result =
+        result ||
+        keywords.some((keyword) => {
+          if (script.toLowerCase().includes(keyword)) {
+            if (
+              keyword === 'drain' &&
+              script.includes('drainKeysFoundInLookupTable')
+            ) {
+              console.log('drain keyword found but likely solana project');
+            } else {
+              console.log('keyword found');
+            }
+            return true; // return true if keyword is found
+          }
+          console.log('keyword not found');
+          return false; // return false if keyword is not found
+        });
+    });
+
+    return result;
+  }, [jsTags]);
+
+  const getUpdatedConditions = useCallback(
+    () => ({
+      ...conditions,
+      'Detected in domain':
+        hostname.split('.').some((part) => /-/.test(part)) ||
+        SUS_KEYWORDS.some((keyword) => hostname.includes(keyword)) ||
+        /^([^.]+\.){3,}/.test(hostname),
+      'Detected in top-level domain': SUS_TLDS.some((tld) =>
+        hostname.split('.').slice(-2).join('.').endsWith(tld)
+      ),
+      'Detected in pathname': SUS_KEYWORDS.some((keyword) =>
+        pathname.includes(keyword)
+      ),
+      'Detected in title':
+        title && SUS_KEYWORDS.some((keyword) => title.includes(keyword)),
+      'Detected in metadata':
+        (metaTags[0] !== null &&
+          !metaTags[0].includes(hostname) &&
+          metaTags[0] !== '/') ||
+        metaTags[1] ||
+        metaTags[2] ||
+        false,
+      'Detected in HTML':
+        content && SUS_KEYWORDS.some((keyword) => content.includes(keyword)),
+      'Detected in JavaScript': jsTags ? jsCheck() : false,
+    }),
+    [hostname, pathname, jsTags, conditions, jsCheck, metaTags, title, content]
+  );
+
+  const evaluateUrl = useCallback(() => {
+    const updatedConditions = getUpdatedConditions(hostname, pathname, jsTags);
+    const determinedGrade = determineGrade(updatedConditions);
+    setConditions(updatedConditions);
+    setGrade(determinedGrade);
+    setBlocked(blocklist.some((blocklist) => hostname.includes(blocklist)));
+
+    if ((isPhishingGrade(grade) || blocked) && !isIncognito) {
+      if (scamSites.length === 0) {
+        chrome.storage.sync.set({ scamSites: [hostname] });
+        setScamSites([hostname]);
+      } else if (!scamSites.includes(hostname)) {
+        let newScamSites = [...scamSites, hostname];
+        chrome.storage.sync.set({ scamSites: newScamSites });
+        setScamSites(newScamSites);
+      }
+    }
+  }, [
+    hostname,
+    pathname,
+    jsTags,
+    blocked,
+    blocklist,
+    grade,
+    isIncognito,
+    scamSites,
+    getUpdatedConditions,
+  ]);
+
   useEffect(() => {
     if (grade === null || !started) {
       setStarted(true);
@@ -121,71 +220,11 @@ function Popup() {
     }
   }, []);
 
-  const handleMessage = (message, sender, sendResponse) => {
-    console.log('message');
-    const results = message.results;
-    if (results) {
-      const [title, content, metaTags, scriptContents] = results;
-      setTitle(title);
-      setContent(content);
-      setMetaTags(metaTags);
-      setJsTags(scriptContents);
-      console.log(metaTags);
-
-      chrome.runtime.onMessage.removeListener(handleMessage);
-    }
-  };
-
   useEffect(() => {
     if (grade === null && blocklist && jsTags) {
-      evaluateUrl(hostname, pathname, jsTags);
+      evaluateUrl();
     }
-  }, [hostname, blocklist, jsTags]);
-
-  const evaluateUrl = (hostname, pathname, jsTags) => {
-    const updatedConditions = getUpdatedConditions(hostname, pathname, jsTags);
-    const determinedGrade = determineGrade(updatedConditions);
-    setConditions(updatedConditions);
-    setGrade(determinedGrade);
-    setBlocked(blocklist.some((blocklist) => hostname.includes(blocklist)));
-
-    if ((isPhishingGrade(grade) || blocked) && !isIncognito) {
-      if (scamSites.length === 0) {
-        chrome.storage.sync.set({ scamSites: [hostname] });
-        setScamSites([hostname]);
-      } else if (!scamSites.includes(hostname)) {
-        let newScamSites = [...scamSites, hostname];
-        chrome.storage.sync.set({ scamSites: newScamSites });
-        setScamSites(newScamSites);
-      }
-    }
-  };
-
-  const getUpdatedConditions = (hostname, pathname, jsTags) => ({
-    ...conditions,
-    'Detected in domain':
-      hostname.split('.').some((part) => /-/.test(part)) ||
-      SUS_KEYWORDS.some((keyword) => hostname.includes(keyword)) ||
-      /^([^.]+\.){3,}/.test(hostname),
-    'Detected in top-level domain': SUS_TLDS.some((tld) =>
-      hostname.split('.').slice(-2).join('.').endsWith(tld)
-    ),
-    'Detected in pathname': SUS_KEYWORDS.some((keyword) =>
-      pathname.includes(keyword)
-    ),
-    'Detected in title':
-      title && SUS_KEYWORDS.some((keyword) => title.includes(keyword)),
-    'Detected in metadata':
-      (metaTags[0] !== null &&
-        !metaTags[0].includes(hostname) &&
-        metaTags[0] !== '/') ||
-      metaTags[1] ||
-      metaTags[2] ||
-      false,
-    'Detected in HTML':
-      content && SUS_KEYWORDS.some((keyword) => content.includes(keyword)),
-    'Detected in JavaScript': jsTags ? jsCheck(jsTags, JS_KEYWORDS) : false,
-  });
+  }, [hostname, blocklist, jsTags, evaluateUrl, grade]);
 
   const determineGrade = (updatedConditions) => {
     const negativeConditionsCount =
@@ -255,28 +294,6 @@ function Popup() {
     chrome.runtime.sendMessage({ results });
   };
 
-  const jsCheck = (scripts, keywords) => {
-    let result = false;
-    scripts.forEach((script) => {
-      keywords.some((keyword) => {
-        if (script.toLowerCase().includes(keyword)) {
-          if (
-            keyword == 'drain' &&
-            script.includes('drainKeysFoundInLookupTable')
-          ) {
-            console.log('drain keyword found but likely solana project');
-          } else {
-            console.log('keyword found');
-            result = true;
-          }
-        }
-        console.log('keyword not found');
-      });
-    });
-
-    return result;
-  };
-
   return (
     <div
       className={`App ${(isPhishingGrade(grade) || blocked) && 'is-phishing'}`}
@@ -317,7 +334,7 @@ function Popup() {
         </ul>
       </main>
       <footer className="footer">
-        <a href="https://protspec.com" target="_blank">
+        <a href="https://protspec.com" target="_blank" rel="noreferrer">
           <img src={logo} className="App-logo" alt="Bulwark logo" />
         </a>
         <span className="scam-count" data-text="Scams detected">
