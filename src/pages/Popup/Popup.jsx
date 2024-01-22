@@ -56,6 +56,9 @@ const SUS_TLDS = [
   '.store',
   '.website',
   '.link',
+  '.my',
+  '.bid',
+  '.estate',
 ];
 
 function Popup() {
