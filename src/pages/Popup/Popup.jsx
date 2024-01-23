@@ -3,63 +3,12 @@ import './Popup.css';
 import logo from '../../assets/img/logo.svg';
 import skull from '../../assets/img/skull.svg';
 import textSkull from '../../assets/img/text-skull.svg';
-
-const INITIAL_CONDITIONS = {
-  'Detected in domain': null,
-  'Detected in top-level domain': null,
-  'Detected in pathname': null,
-  'Detected in title': null,
-  'Detected in metadata': null,
-  'Detected in HTML': null,
-  'Detected in JavaScript': null,
-};
-
-const SUS_KEYWORDS = [
-  'whitelist',
-  'airdrop',
-  'unprecedented',
-  'potential',
-  'embrace',
-  'zeros',
-  'distribution',
-  'disable vpn',
-  'disable your vpn',
-  'limited time',
-  'token',
-  'embrace',
-  'kindly',
-  'migrat',
-  'claim',
-  'victim',
-  'poor',
-];
-
-const JS_KEYWORDS = ['drain', 'victim', 'seaport'];
-
-const SUS_TLDS = [
-  '.ru',
-  '.gift',
-  '.cf',
-  '.online',
-  '.gq',
-  '.biz',
-  '.icu',
-  '.yt',
-  '.gr',
-  '.claims',
-  '.cl',
-  '.af',
-  '.cfd',
-  '.pw',
-  '.click',
-  '.info',
-  '.store',
-  '.website',
-  '.link',
-  '.my',
-  '.bid',
-  '.estate',
-];
+import {
+  INITIAL_CONDITIONS,
+  SUS_KEYWORDS,
+  JS_KEYWORDS,
+  SUS_TLDS,
+} from '../../utils/constants';
 
 function Popup() {
   const [conditions, setConditions] = useState(INITIAL_CONDITIONS);
@@ -77,7 +26,6 @@ function Popup() {
   const [started, setStarted] = useState(false);
 
   const handleMessage = (message, sender, sendResponse) => {
-    console.log('message');
     const results = message.results;
     if (results) {
       const [title, content, metaTags, scriptContents] = results;
@@ -85,37 +33,10 @@ function Popup() {
       setContent(content);
       setMetaTags(metaTags);
       setJsTags(scriptContents);
-      console.log(metaTags);
 
       chrome.runtime.onMessage.removeListener(handleMessage);
     }
   };
-
-  const jsCheck = useCallback(() => {
-    const keywords = JS_KEYWORDS;
-    let result = false;
-    jsTags.forEach((script) => {
-      result =
-        result ||
-        keywords.some((keyword) => {
-          if (script.toLowerCase().includes(keyword)) {
-            if (
-              keyword === 'drain' &&
-              script.includes('drainKeysFoundInLookupTable')
-            ) {
-              console.log('drain keyword found but likely solana project');
-            } else {
-              console.log('keyword found');
-            }
-            return true; // return true if keyword is found
-          }
-          console.log('keyword not found');
-          return false; // return false if keyword is not found
-        });
-    });
-
-    return result;
-  }, [jsTags]);
 
   const getUpdatedConditions = useCallback(
     () => ({
@@ -141,9 +62,9 @@ function Popup() {
         false,
       'Detected in HTML':
         content && SUS_KEYWORDS.some((keyword) => content.includes(keyword)),
-      'Detected in JavaScript': jsTags ? jsCheck() : false,
+      'Detected in JavaScript': jsTags ? jsCheck(jsTags) : false,
     }),
-    [hostname, pathname, jsTags, conditions, jsCheck, metaTags, title, content]
+    [hostname, pathname, jsTags, conditions, metaTags, title, content]
   );
 
   const evaluateUrl = useCallback(() => {
@@ -163,17 +84,19 @@ function Popup() {
         setScamSites(newScamSites);
       }
     }
-  }, [
-    hostname,
-    pathname,
-    jsTags,
-    blocked,
-    blocklist,
-    grade,
-    isIncognito,
-    scamSites,
-    getUpdatedConditions,
-  ]);
+  }, [hostname, pathname, jsTags, scamSites]);
+
+  const determineGrade = (updatedConditions) => {
+    const negativeConditionsCount =
+      Object.values(updatedConditions).filter(Boolean).length;
+    const grades = ['A', 'B', 'C', 'D', 'F'];
+    return grades[Math.min(negativeConditionsCount, 4)];
+  };
+
+  const isPhishingGrade = (grade) => {
+    const phishingGrades = ['C', 'D', 'F'];
+    return phishingGrades.includes(grade);
+  };
 
   useEffect(() => {
     if (grade === null || !started) {
@@ -184,7 +107,6 @@ function Popup() {
         'https://raw.githubusercontent.com/phishfort/phishfort-lists/master/blacklists/hotlist.json'
       )
         .then(function (response) {
-          console.log('fetched');
           if (response.status !== 200) {
             console.log(response.status);
             return;
@@ -227,75 +149,7 @@ function Popup() {
     if (grade === null && blocklist && jsTags) {
       evaluateUrl();
     }
-  }, [hostname, blocklist, jsTags, evaluateUrl, grade]);
-
-  const determineGrade = (updatedConditions) => {
-    const negativeConditionsCount =
-      Object.values(updatedConditions).filter(Boolean).length;
-    const grades = ['A', 'B', 'C', 'D', 'F'];
-    return grades[Math.min(negativeConditionsCount, 4)];
-  };
-
-  const isPhishingGrade = (grade) => {
-    const phishingGrades = ['C', 'D', 'F'];
-    return phishingGrades.includes(grade);
-  };
-
-  const invokeContentScript = async () => {
-    const metaOgUrl = document.querySelector('meta[property="og:url"]');
-    const saveUrl = document.querySelector('meta[name="savepage-url"]');
-    const scrapUrl = document
-      .querySelector('html')
-      .getAttribute('data-scrapbook-source');
-
-    const domMetaTags = [
-      metaOgUrl ? metaOgUrl.content : null,
-      saveUrl ? saveUrl.content : null,
-      scrapUrl || null,
-    ];
-
-    const scripts = Array.from(document.querySelectorAll('script[src]'));
-    const host = window.location.host;
-    const scriptPromises = [];
-
-    scripts.forEach((script) => {
-      if (
-        script.src.toLowerCase().includes(host) &&
-        !script.src.toLowerCase().includes('_next')
-      ) {
-        const promise = fetch(script.src)
-          .then((response) => {
-            if (!response.ok) {
-              // If the response is not successful (including CORS errors), don't process further.
-              throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-            return response.text();
-          })
-          .catch((error) => {
-            // Log the error, but don't add a rejected promise to `scriptPromises`.
-            console.error('Error fetching script:', error);
-          });
-
-        // Only add promises that we know will either resolve successfully or not be added at all.
-        scriptPromises.push(promise);
-      }
-    });
-
-    // Filter out any undefined entries due to failed fetches before waiting for all promises.
-    const scriptContents = (await Promise.all(scriptPromises)).filter(
-      (content) => content !== undefined
-    );
-
-    console.log(scriptContents);
-    const results = [
-      document.title.toLowerCase(),
-      document.body.textContent.toLowerCase(),
-      domMetaTags,
-      scriptContents,
-    ];
-
-    chrome.runtime.sendMessage({ results });
-  };
+  }, [blocklist, jsTags, evaluateUrl, grade]);
 
   return (
     <div
@@ -347,6 +201,84 @@ function Popup() {
       </footer>
     </div>
   );
+}
+
+async function invokeContentScript() {
+  const metaOgUrl = document.querySelector('meta[property="og:url"]');
+  const saveUrl = document.querySelector('meta[name="savepage-url"]');
+  const scrapUrl = document
+    .querySelector('html')
+    .getAttribute('data-scrapbook-source');
+
+  const domMetaTags = [
+    metaOgUrl ? metaOgUrl.content : null,
+    saveUrl ? saveUrl.content : null,
+    scrapUrl || null,
+  ];
+
+  const scripts = Array.from(document.querySelectorAll('script[src]'));
+  const host = window.location.host;
+  const scriptPromises = [];
+
+  scripts.forEach((script) => {
+    if (
+      script.src.toLowerCase().includes(host) &&
+      !script.src.toLowerCase().includes('_next')
+    ) {
+      const promise = fetch(script.src)
+        .then((response) => {
+          if (!response.ok) {
+            // If the response is not successful (including CORS errors), don't process further.
+            throw new Error(`HTTP error! Status: ${response.status}`);
+          }
+          return response.text();
+        })
+        .catch((error) => {
+          // Log the error, but don't add a rejected promise to `scriptPromises`.
+          console.error('Error fetching script:', error);
+        });
+
+      // Only add promises that we know will either resolve successfully or not be added at all.
+      scriptPromises.push(promise);
+    }
+  });
+
+  // Filter out any undefined entries due to failed fetches before waiting for all promises.
+  const scriptContents = (await Promise.all(scriptPromises)).filter(
+    (content) => content !== undefined
+  );
+
+  const results = [
+    document.title.toLowerCase(),
+    document.body.textContent.toLowerCase(),
+    domMetaTags,
+    scriptContents,
+  ];
+
+  chrome.runtime.sendMessage({ results });
+}
+
+function jsCheck(scripts) {
+  const keywords = JS_KEYWORDS;
+  let result = false;
+  scripts.forEach((script) => {
+    result =
+      result ||
+      keywords.some((keyword) => {
+        if (script.toLowerCase().includes(keyword)) {
+          if (
+            keyword === 'drain' &&
+            script.includes('drainKeysFoundInLookupTable')
+          ) {
+            return false;
+          }
+          return true;
+        }
+        return false;
+      });
+  });
+
+  return result;
 }
 
 export default Popup;
