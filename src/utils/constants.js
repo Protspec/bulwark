@@ -5,8 +5,18 @@ export const INITIAL_CONDITIONS = {
   'Detected in title': null,
   'Detected in metadata': null,
   'Detected in HTML': null,
+  'Detected in HTML (2)': null,
   'Detected in JavaScript': null,
 };
+
+export const CRIT_KEYWORDS = [
+  'data-scrapbook-',
+  'data-savepage-',
+  'disable vpn',
+  'disable your vpn',
+  'drain',
+  'victim'
+]
 
 export const SUS_KEYWORDS = [
   'whitelist',
@@ -16,18 +26,19 @@ export const SUS_KEYWORDS = [
   'embrace',
   'zeros',
   'distribution',
-  'disable vpn',
-  'disable your vpn',
   'limited time',
   'token',
   'embrace',
   'kindly',
   'migrat',
   'claim',
-  'victim',
   'poor',
-  'drain'
 ];
+
+export const SUS_DOMAINS = [
+  'usdt',
+  'usdc'
+]
 
 export const JS_KEYWORDS = ['drain', 'victim', 'seaport', 'x2y2', 'cryptopunk'];
 
