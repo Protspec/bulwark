@@ -26,9 +26,10 @@ export const SUS_KEYWORDS = [
   'claim',
   'victim',
   'poor',
+  'drain'
 ];
 
-export const JS_KEYWORDS = ['drain', 'victim', 'seaport'];
+export const JS_KEYWORDS = ['drain', 'victim', 'seaport', 'x2y2', 'cryptopunk'];
 
 export const SUS_TLDS = [
   '.ru',
