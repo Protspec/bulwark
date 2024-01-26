@@ -15,8 +15,8 @@ export const CRIT_KEYWORDS = [
   'disable vpn',
   'disable your vpn',
   'drain',
-  'victim'
-]
+  'victim',
+];
 
 export const SUS_KEYWORDS = [
   'whitelist',
@@ -35,12 +35,17 @@ export const SUS_KEYWORDS = [
   'poor',
 ];
 
-export const SUS_DOMAINS = [
-  'usdt',
-  'usdc'
-]
+export const SUS_DOMAINS = ['usdt', 'usdc'];
 
-export const JS_KEYWORDS = ['drain', 'victim', 'seaport', 'x2y2', 'cryptopunk'];
+export const JS_KEYWORDS = [
+  'drain',
+  'victim',
+  'seaport',
+  'x2y2',
+  'cryptopunk',
+  'moonbird',
+  'moon_bird',
+];
 
 export const SUS_TLDS = [
   '.ru',
