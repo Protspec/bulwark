@@ -70,7 +70,7 @@ function Popup() {
     [hostname, pathname, jsTags, conditions, metaTags, title, content]
   );
 
-  const evaluateUrl = useCallback(() => {
+  const evaluateUrl = () => {
     const updatedConditions = getUpdatedConditions(hostname, pathname, jsTags);
     const determinedGrade = determineGrade(updatedConditions);
     setConditions(updatedConditions);
@@ -87,7 +87,7 @@ function Popup() {
         setScamSites(newScamSites);
       }
     }
-  }, [hostname, pathname, jsTags, scamSites]);
+  };
 
   const determineGrade = (updatedConditions) => {
     const negativeConditionsCount =
