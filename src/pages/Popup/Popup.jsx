@@ -5,11 +5,11 @@ import skull from '../../assets/img/skull.svg';
 import textSkull from '../../assets/img/text-skull.svg';
 import {
   INITIAL_CONDITIONS,
-  CRIT_KEYWORDS,
+  HTML_KEYWORDS,
   SUS_KEYWORDS,
-  SUS_DOMAINS,
+  DOMAIN_KEYWORDS,
   JS_KEYWORDS,
-  SUS_TLDS,
+  TLD_KEYWORDS,
 } from '../../utils/constants';
 
 function Popup() {
@@ -46,9 +46,9 @@ function Popup() {
       'Detected in domain':
         hostname.split('.').some((part) => /-/.test(part)) ||
         SUS_KEYWORDS.some((keyword) => hostname.includes(keyword)) ||
-        SUS_DOMAINS.some((keyword) => hostname.includes(keyword)) ||
+        DOMAIN_KEYWORDS.some((keyword) => hostname.includes(keyword)) ||
         /^([^.]+\.){3,}/.test(hostname),
-      'Detected in top-level domain': SUS_TLDS.some((tld) =>
+      'Detected in top-level domain': TLD_KEYWORDS.some((tld) =>
         hostname.split('.').slice(-2).join('.').endsWith(tld)
       ),
       'Detected in pathname': SUS_KEYWORDS.some((keyword) =>
@@ -64,7 +64,7 @@ function Popup() {
       'Detected in HTML':
         content && SUS_KEYWORDS.some((keyword) => content.includes(keyword)),
       'Detected in HTML (2)':
-        content && CRIT_KEYWORDS.some((keyword) => content.includes(keyword)),
+        content && HTML_KEYWORDS.some((keyword) => content.includes(keyword)),
       'Detected in JavaScript': jsTags ? jsCheck(jsTags) : false,
     }),
     [hostname, pathname, jsTags, conditions, metaTags, title, content]

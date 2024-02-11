@@ -9,11 +9,9 @@ export const INITIAL_CONDITIONS = {
   'Detected in JavaScript': null,
 };
 
-export const CRIT_KEYWORDS = [
+export const HTML_KEYWORDS = [
   'data-scrapbook-',
   'data-savepage-',
-  'disable vpn',
-  'disable your vpn',
   'drain',
   'victim',
 ];
@@ -35,7 +33,7 @@ export const SUS_KEYWORDS = [
   'poor',
 ];
 
-export const SUS_DOMAINS = ['usdt', 'usdc'];
+export const DOMAIN_KEYWORDS = ['usdt', 'usdc'];
 
 export const JS_KEYWORDS = [
   'drain',
@@ -47,7 +45,7 @@ export const JS_KEYWORDS = [
   'moon_bird',
 ];
 
-export const SUS_TLDS = [
+export const TLD_KEYWORDS = [
   '.ru',
   '.gift',
   '.cf',
@@ -70,4 +68,5 @@ export const SUS_TLDS = [
   '.my',
   '.bid',
   '.estate',
+  '.digital',
 ];
