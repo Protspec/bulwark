@@ -77,7 +77,7 @@ function Popup() {
     setGrade(determinedGrade);
     setBlocked(blocklist.some((blocklist) => hostname.includes(blocklist)));
 
-    if ((isPhishingGrade(grade) || blocked) && !isIncognito) {
+    if ((isPhishingGrade(determinedGrade) || blocked) && !isIncognito) {
       if (scamSites.length === 0) {
         chrome.storage.sync.set({ scamSites: [hostname] });
         setScamSites([hostname]);
