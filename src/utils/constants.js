@@ -14,26 +14,19 @@ export const HTML_KEYWORDS = [
   'data-savepage-',
   'drain',
   'victim',
+  'partner-address',
 ];
 
 export const SUS_KEYWORDS = [
-  'whitelist',
-  'airdrop',
   'unprecedented',
-  'potential',
   'embrace',
-  'zeros',
-  'distribution',
   'limited time',
-  'token',
   'embrace',
   'kindly',
-  'migrat',
-  'claim',
   'poor',
 ];
 
-export const DOMAIN_KEYWORDS = ['usdt', 'usdc'];
+export const DOMAIN_KEYWORDS = ['usdt', 'usdc', 'wl', 'claim', 'whitelist'];
 
 export const JS_KEYWORDS = [
   'drain',
