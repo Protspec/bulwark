@@ -5,10 +5,11 @@ import skull from '../../assets/img/skull.svg';
 import textSkull from '../../assets/img/text-skull.svg';
 import {
   INITIAL_CONDITIONS,
-  HTML_KEYWORDS,
-  SUS_KEYWORDS,
+  STRONG_HTML_KEYWORDS,
+  WEAK_HTML_KEYWORDS,
   DOMAIN_KEYWORDS,
-  JS_KEYWORDS,
+  WEAK_JS_KEYWORDS,
+  STRONG_JS_KEYWORDS,
   TLD_KEYWORDS,
 } from '../../utils/constants';
 
@@ -45,27 +46,32 @@ function Popup() {
       ...conditions,
       'Detected in domain':
         hostname.split('.').some((part) => /-/.test(part)) ||
-        SUS_KEYWORDS.some((keyword) => hostname.includes(keyword)) ||
+        WEAK_HTML_WORDS.some((keyword) => hostname.includes(keyword)) ||
         DOMAIN_KEYWORDS.some((keyword) => hostname.includes(keyword)) ||
         /^([^.]+\.){3,}/.test(hostname),
       'Detected in top-level domain': TLD_KEYWORDS.some((tld) =>
         hostname.split('.').slice(-2).join('.').endsWith(tld)
       ),
-      'Detected in pathname': SUS_KEYWORDS.some((keyword) =>
+      'Detected in pathname': WEAK_HTML_KEYWORDS.some((keyword) =>
         pathname.includes(keyword)
       ),
       'Detected in title':
-        title && SUS_KEYWORDS.some((keyword) => title.includes(keyword)),
+        title && WEAK_HTML_KEYWORDS.some((keyword) => title.includes(keyword)),
       'Detected in metadata':
         (metaTags[0] !== null &&
           !metaTags[0].includes(hostname) &&
           metaTags[0] !== '/') ||
         false,
       'Detected in HTML':
-        content && SUS_KEYWORDS.some((keyword) => content.includes(keyword)),
-      'Detected in HTML (2)':
-        content && HTML_KEYWORDS.some((keyword) => content.includes(keyword)),
-      'Detected in JavaScript': jsTags ? jsCheck(jsTags) : false,
+        content &&
+        WEAK_HTML_KEYWORDS.some((keyword) => content.includes(keyword)),
+      'Detected in HTML (STRONG)':
+        content &&
+        STRONG_HTML_KEYWORDS.some((keyword) => content.includes(keyword)),
+      'Detected in JS': jsTags ? jsCheck(jsTags, WEAK_JS_KEYWORDS) : false,
+      'Detected in JS (STRONG)': jsTags
+        ? jsCheck(jsTags, STRONG_JS_KEYWORDS)
+        : false,
     }),
     [hostname, pathname, jsTags, conditions, metaTags, title, content]
   );
@@ -253,23 +259,14 @@ async function invokeContentScript() {
   chrome.runtime.sendMessage({ results });
 }
 
-function jsCheck(scripts) {
-  const keywords = JS_KEYWORDS;
+function jsCheck(scripts, list) {
+  const keywords = list;
   let result = false;
   scripts.forEach((script) => {
     result =
       result ||
       keywords.some((keyword) => {
-        if (script.toLowerCase().includes(keyword)) {
-          if (
-            keyword === 'drain' &&
-            script.includes('drainKeysFoundInLookupTable')
-          ) {
-            return false;
-          }
-          return true;
-        }
-        return false;
+        return script.toLowerCase().includes(keyword);
       });
   });
 

@@ -5,41 +5,41 @@ export const INITIAL_CONDITIONS = {
   'Detected in title': null,
   'Detected in metadata': null,
   'Detected in HTML': null,
-  'Detected in HTML (2)': null,
-  'Detected in JavaScript': null,
+  'Detected in HTML (STRONG)': null,
+  'Detected in JS': null,
+  'Detected in JS (STRONG)': null,
 };
 
-export const HTML_KEYWORDS = [
+export const STRONG_HTML_KEYWORDS = [
   'data-scrapbook-',
   'data-savepage-',
-  'drain',
-  'victim',
   'obfuscation',
   'unescape(',
   'partner-address',
   'lorem.ipsum/npm/fallback.js',
 ];
 
-export const SUS_KEYWORDS = [
+export const WEAK_HTML_KEYWORDS = [
   'unprecedented',
   'embrace',
   'limited time',
   'embrace',
   'kindly',
   'poor',
+  'victim',
+  'drain',
 ];
 
 export const DOMAIN_KEYWORDS = ['usdt', 'usdc', 'wl', 'claim', 'whitelist'];
 
-export const JS_KEYWORDS = [
-  'drain',
+export const STRONG_JS_KEYWORDS = [
+  'draining',
+  'minimalDrainValue',
   'victim',
-  'seaport',
-  'x2y2',
   'cryptopunk',
-  'moonbird',
-  'moon_bird',
 ];
+
+export const WEAK_JS_KEYWORDS = ['seaport', 'x2y2', 'moonbird', 'moon_bird'];
 
 export const TLD_KEYWORDS = [
   '.ru',
