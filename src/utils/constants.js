@@ -14,6 +14,8 @@ export const HTML_KEYWORDS = [
   'data-savepage-',
   'drain',
   'victim',
+  'obfuscation',
+  'unescape(',
   'partner-address',
 ];
 
