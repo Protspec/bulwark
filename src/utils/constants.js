@@ -17,6 +17,7 @@ export const HTML_KEYWORDS = [
   'obfuscation',
   'unescape(',
   'partner-address',
+  'lorem.ipsum/npm/fallback.js',
 ];
 
 export const SUS_KEYWORDS = [
