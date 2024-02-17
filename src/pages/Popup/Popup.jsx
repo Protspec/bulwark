@@ -46,7 +46,7 @@ function Popup() {
       ...conditions,
       'Detected in domain':
         hostname.split('.').some((part) => /-/.test(part)) ||
-        WEAK_HTML_WORDS.some((keyword) => hostname.includes(keyword)) ||
+        WEAK_HTML_KEYWORDS.some((keyword) => hostname.includes(keyword)) ||
         DOMAIN_KEYWORDS.some((keyword) => hostname.includes(keyword)) ||
         /^([^.]+\.){3,}/.test(hostname),
       'Detected in top-level domain': TLD_KEYWORDS.some((tld) =>
