@@ -49,7 +49,6 @@ function Popup() {
   };
 
   const getUpdatedConditions = useCallback(() => {
-    console.log(siteData);
     let tempScore = 0;
 
     if (
@@ -132,10 +131,10 @@ function Popup() {
       (determinedScore >= PHISH_THRESHOLD || blocked) &&
       !isIncognito.current
     ) {
-      if (scamSites.length === 0) {
+      if (scamSites && scamSites.length === 0) {
         chrome.storage.sync.set({ scamSites: [siteData.hostname] });
         setScamSites([siteData.hostname]);
-      } else if (!scamSites.includes(siteData.hostname)) {
+      } else if (scamSites && !scamSites.includes(siteData.hostname)) {
         const newScamSites = [...scamSites, siteData.hostname];
         chrome.storage.sync.set({ scamSites: newScamSites });
         setScamSites(newScamSites);
@@ -253,7 +252,7 @@ function Popup() {
   );
 }
 
-async function invokeContentScript() {
+const invokeContentScript = async () => {
   const metaOgUrl = document.querySelector('meta[property="og:url"]');
 
   const domMetaTags = [metaOgUrl ? metaOgUrl.content : null];
@@ -292,9 +291,9 @@ async function invokeContentScript() {
   ];
 
   chrome.runtime.sendMessage({ results });
-}
+};
 
-function jsCheck(scripts, list) {
+const jsCheck = (scripts, list) => {
   const keywords = list;
   let result = false;
   scripts.forEach((script) => {
@@ -306,6 +305,6 @@ function jsCheck(scripts, list) {
   });
 
   return result;
-}
+};
 
 export default Popup;
