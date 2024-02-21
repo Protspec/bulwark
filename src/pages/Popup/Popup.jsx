@@ -1,4 +1,10 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import './Popup.css';
 import logo from '../../assets/img/logo.svg';
 import skull from '../../assets/img/skull.svg';
@@ -45,19 +51,21 @@ function Popup() {
     }
   });
 
-  const getUpdatedConditions = useCallback(() => {
+  const getUpdatedConditions = useMemo(() => {
     let tempScore = 0;
 
     if (
-      hostname.split('.').some((part) => /-/.test(part)) ||
-      WEAK_HTML_KEYWORDS.some((keyword) => hostname.includes(keyword)) ||
-      DOMAIN_KEYWORDS.some((keyword) => hostname.includes(keyword)) ||
-      /^([^.]+\.){3,}/.test(hostname)
+      hostname &&
+      (hostname.split('.').some((part) => /-/.test(part)) ||
+        WEAK_HTML_KEYWORDS.some((keyword) => hostname.includes(keyword)) ||
+        DOMAIN_KEYWORDS.some((keyword) => hostname.includes(keyword)) ||
+        /^([^.]+\.){3,}/.test(hostname))
     ) {
       tempScore += 1;
     }
 
     if (
+      hostname &&
       TLD_KEYWORDS.some((tld) =>
         hostname.split('.').slice(-2).join('.').endsWith(tld)
       )
@@ -65,7 +73,10 @@ function Popup() {
       tempScore += 1;
     }
 
-    if (WEAK_HTML_KEYWORDS.some((keyword) => pathname.includes(keyword))) {
+    if (
+      pathname &&
+      WEAK_HTML_KEYWORDS.some((keyword) => pathname.includes(keyword))
+    ) {
       tempScore += 1;
     }
 
@@ -108,7 +119,7 @@ function Popup() {
   }, [hostname, pathname, jsTags, metaTags, title, content]);
 
   const evaluateUrl = async () => {
-    const determinedScore = getUpdatedConditions();
+    const determinedScore = getUpdatedConditions;
     score.current = determinedScore;
     setBlocked(
       blocklist.current.some((blockitem) => hostname.includes(blockitem))
