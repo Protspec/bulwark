@@ -66,7 +66,7 @@ h3.is-scam {
   font-weight: 600;
   text-transform: uppercase;
   text-align: center;
-  margin: 24px 0 0;
+  margin: 20px 0 0;
   animation-name: danger;
   animation-delay: 0;
   animation-iteration-count: infinite;
@@ -75,11 +75,9 @@ h3.is-scam {
 }
 
 p.is-scam {
-  margin: 8px 0 16px;
+  margin: 16px 0;
   text-align: center;
   font-size: 16px;
-  font-weight: 600;
-  color: #ed2e15;
 }
 
 p.is-benign {
@@ -134,6 +132,10 @@ h1.domain span {
   background-position: center;
 }
 
+.explanation {
+  margin: 0 16px;
+}
+
 .footer {
   width: 100%;
   display: flex;
@@ -153,17 +155,6 @@ h1.domain span {
   top: 3px;
   margin-right: 4px;
   opacity: 0.5;
-}
-
-.indicatorList li {
-  display: block;
-  font-size: 16px;
-}
-
-.indicatorList li span {
-  font-size: 14px;
-  position: relative;
-  top: 1px;
 }
 
 .scam-count {

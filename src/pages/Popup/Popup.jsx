@@ -13,8 +13,8 @@ import {
 } from '../../utils/constants';
 
 function Popup() {
-  const [conditions, setConditions] = useState(null);
-  const [grade, setGrade] = useState(null);
+  const [score, setScore] = useState(0);
+  const [isPhish, setIsPhish] = useState(false);
   const [hostname, setHostname] = useState(null);
   const [pathname, setPathname] = useState(null);
   const [title, setTitle] = useState(null);
@@ -40,45 +40,76 @@ function Popup() {
     }
   };
 
-  const getUpdatedConditions = useCallback(
-    () => ({
-      domain:
-        hostname.split('.').some((part) => /-/.test(part)) ||
-        WEAK_HTML_KEYWORDS.some((keyword) => hostname.includes(keyword)) ||
-        DOMAIN_KEYWORDS.some((keyword) => hostname.includes(keyword)) ||
-        /^([^.]+\.){3,}/.test(hostname),
-      tld: TLD_KEYWORDS.some((tld) =>
+  const getUpdatedConditions = useCallback(() => {
+    let tempScore = 0;
+
+    if (
+      hostname.split('.').some((part) => /-/.test(part)) ||
+      WEAK_HTML_KEYWORDS.some((keyword) => hostname.includes(keyword)) ||
+      DOMAIN_KEYWORDS.some((keyword) => hostname.includes(keyword)) ||
+      /^([^.]+\.){3,}/.test(hostname)
+    ) {
+      tempScore += 1;
+    }
+
+    if (
+      TLD_KEYWORDS.some((tld) =>
         hostname.split('.').slice(-2).join('.').endsWith(tld)
-      ),
-      pathname: WEAK_HTML_KEYWORDS.some((keyword) =>
-        pathname.includes(keyword)
-      ),
-      title:
-        title && WEAK_HTML_KEYWORDS.some((keyword) => title.includes(keyword)),
-      metadata:
-        (metaTags[0] !== null &&
-          !metaTags[0].includes(hostname) &&
-          metaTags[0] !== '/') ||
-        false,
-      weakhtml:
-        content &&
-        WEAK_HTML_KEYWORDS.some((keyword) => content.includes(keyword)),
-      html:
-        content && HTML_KEYWORDS.some((keyword) => content.includes(keyword)),
-      weakjs: jsTags ? jsCheck(jsTags, WEAK_JS_KEYWORDS) : false,
-      js: jsTags ? jsCheck(jsTags, JS_KEYWORDS) : false,
-    }),
-    [hostname, pathname, jsTags, conditions, metaTags, title, content]
-  );
+      )
+    ) {
+      tempScore += 1;
+    }
 
-  const evaluateUrl = () => {
-    const updatedConditions = getUpdatedConditions(hostname, pathname, jsTags);
-    const determinedGrade = determineGrade(updatedConditions);
-    setConditions(updatedConditions);
-    setGrade(determinedGrade);
+    if (WEAK_HTML_KEYWORDS.some((keyword) => pathname.includes(keyword))) {
+      tempScore += 1;
+    }
+
+    if (
+      title &&
+      WEAK_HTML_KEYWORDS.some((keyword) => title.includes(keyword))
+    ) {
+      tempScore += 1;
+    }
+
+    if (
+      (metaTags[0] !== null &&
+        !metaTags[0].includes(hostname) &&
+        metaTags[0] !== '/') ||
+      false
+    ) {
+      tempScore += 1;
+    }
+
+    if (
+      content &&
+      WEAK_HTML_KEYWORDS.some((keyword) => content.includes(keyword))
+    ) {
+      tempScore += 1;
+    }
+
+    if (content && HTML_KEYWORDS.some((keyword) => content.includes(keyword))) {
+      tempScore += 1;
+    }
+
+    if (jsTags && jsCheck(jsTags, WEAK_JS_KEYWORDS)) {
+      tempScore += 1;
+    }
+
+    if (jsTags && jsCheck(jsTags, JS_KEYWORDS)) {
+      tempScore += 2;
+    }
+
+    return tempScore;
+  }, [hostname, pathname, jsTags, metaTags, title, content]);
+
+  const evaluateUrl = async () => {
+    const determinedScore = getUpdatedConditions();
+    setScore(determinedScore);
     setBlocked(blocklist.some((blocklist) => hostname.includes(blocklist)));
+    setIsPhish(determinedScore >= 3); // Use determinedScore instead of score
 
-    if ((isPhishingGrade(determinedGrade) || blocked) && !isIncognito) {
+    if ((determinedScore >= 3 || blocked) && !isIncognito) {
+      // Use determinedScore instead of isPhish
       if (scamSites.length === 0) {
         chrome.storage.sync.set({ scamSites: [hostname] });
         setScamSites([hostname]);
@@ -90,20 +121,8 @@ function Popup() {
     }
   };
 
-  const determineGrade = (updatedConditions) => {
-    const negativeConditionsCount =
-      Object.values(updatedConditions).filter(Boolean).length;
-    const grades = ['A', 'B', 'C', 'D', 'F'];
-    return grades[Math.min(negativeConditionsCount, 4)];
-  };
-
-  const isPhishingGrade = (grade) => {
-    const phishingGrades = ['C', 'D', 'F'];
-    return phishingGrades.includes(grade);
-  };
-
   useEffect(() => {
-    if (grade === null || !started) {
+    if (score === 0 || !started) {
       setStarted(true);
       setIsIncognito(chrome.windows.getCurrent.isIncognito);
 
@@ -150,50 +169,38 @@ function Popup() {
   }, []);
 
   useEffect(() => {
-    if (grade === null && blocklist && jsTags) {
+    if (score === 0 && blocklist && jsTags) {
       evaluateUrl();
     }
-  }, [blocklist, jsTags, evaluateUrl, grade]);
+  }, [blocklist, jsTags, evaluateUrl, score]);
 
   return (
-    <div
-      className={`App ${(isPhishingGrade(grade) || blocked) && 'is-phishing'}`}
-    >
+    <div className={`App ${(isPhish || blocked) && 'is-phishing'}`}>
       <main
         style={{
-          backgroundImage: `url(${
-            (isPhishingGrade(grade) || blocked) && skull
-          })`,
+          backgroundImage: `url(${(isPhish || blocked) && skull})`,
+          backgroundPosition: `center 50px`,
+          backgroundSize: `50%`,
         }}
       >
         <h1 className="domain">
           <span>{hostname}</span>
         </h1>
-        {isPhishingGrade(grade) || blocked ? (
-          <>
-            <h3 className="is-scam">DANGER</h3>
-            <p className="is-scam">
-              {blocked
-                ? 'Flagged as malicious, do not interact.'
-                : 'Scam indicators found, do not interact.'}
-            </p>
-          </>
-        ) : (
-          <p className="is-benign">Not enough scam indicators detected</p>
-        )}
-        <ul className="indicatorList">
-          <li className={`${!blocked && 'null'}`}>
-            <span>{blocked === null ? '❓' : blocked ? '❌' : '〰️'}</span>{' '}
-            Recently added to blocklist
-          </li>
-          {conditions &&
-            Object.entries(conditions).map(([condition, value], index) => (
-              <li key={index} className={`${!value && 'null'}`}>
-                <span>{value === null ? '❓' : value ? '❌' : '〰️'}</span>{' '}
-                {condition}
-              </li>
-            ))}
-        </ul>
+        <div className="explanation">
+          {isPhish || blocked ? (
+            <>
+              <h3 className="is-scam">DANGER</h3>
+              <p className="is-scam">
+                {blocked
+                  ? 'This site has been reported as a crypto phishing scam.'
+                  : 'Indicators that this site is a crypto phishing scam were detected.'}
+              </p>
+              <p className="is-scam">Do not interact with this site.</p>
+            </>
+          ) : (
+            <p className="is-benign">Not enough scam indicators detected</p>
+          )}
+        </div>
       </main>
       <footer className="footer">
         <a href="https://protspec.com" target="_blank" rel="noreferrer">
@@ -225,22 +232,18 @@ async function invokeContentScript() {
       const promise = fetch(script.src)
         .then((response) => {
           if (!response.ok) {
-            // If the response is not successful (including CORS errors), don't process further.
             throw new Error(`HTTP error! Status: ${response.status}`);
           }
           return response.text();
         })
         .catch((error) => {
-          // Log the error, but don't add a rejected promise to `scriptPromises`.
           console.error('Error fetching script:', error);
         });
 
-      // Only add promises that we know will either resolve successfully or not be added at all.
       scriptPromises.push(promise);
     }
   });
 
-  // Filter out any undefined entries due to failed fetches before waiting for all promises.
   const scriptContents = (await Promise.all(scriptPromises)).filter(
     (content) => content !== undefined
   );
