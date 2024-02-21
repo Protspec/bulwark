@@ -26,6 +26,7 @@ function Popup() {
   const [scamSites, setScamSites] = useState(null);
   const [isIncognito, setIsIncognito] = useState(true);
   const [started, setStarted] = useState(false);
+  const [done, setDone] = useState(false);
 
   const handleMessage = (message, sender, sendResponse) => {
     const results = message.results;
@@ -119,6 +120,8 @@ function Popup() {
         setScamSites(newScamSites);
       }
     }
+
+    setDone(true);
   };
 
   useEffect(() => {
@@ -198,7 +201,13 @@ function Popup() {
               <p className="is-scam">Do not interact with this site.</p>
             </>
           ) : (
-            <p className="is-benign">Not enough scam indicators detected</p>
+            <p className="is-benign">
+              {done ? (
+                <p className="is-benign">Not enough indicators detected</p>
+              ) : (
+                <h3 className="is-benign">ANALYZING…</h3>
+              )}
+            </p>
           )}
         </div>
       </main>

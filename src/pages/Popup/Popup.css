@@ -60,13 +60,15 @@ h1 {
   text-align: center;
 }
 
-h3.is-scam {
+h3 {
   font-size: 32px;
-  color: #ed2e15;
   font-weight: 600;
   text-transform: uppercase;
   text-align: center;
   margin: 20px 0 0;
+}
+h3.is-scam {
+  color: #ed2e15;
   animation-name: danger;
   animation-delay: 0;
   animation-iteration-count: infinite;
