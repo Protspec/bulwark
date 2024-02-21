@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import './Popup.css';
 import logo from '../../assets/img/logo.svg';
 import skull from '../../assets/img/skull.svg';
@@ -22,14 +22,15 @@ function Popup() {
     metaTags: [null],
     jsTags: null,
   });
-  const [score, setScore] = useState(0);
   const [isPhish, setIsPhish] = useState(false);
-  const [blocklist, setBlocklist] = useState(null);
   const [blocked, setBlocked] = useState(null);
   const [scamSites, setScamSites] = useState(null);
-  const [isIncognito, setIsIncognito] = useState(true);
-  const [started, setStarted] = useState(false);
   const [done, setDone] = useState(false);
+
+  const blocklist = useRef(null);
+  const score = useRef(0);
+  const started = useRef(false);
+  const isIncognito = useRef(true);
 
   const handleMessage = (message, sender, sendResponse) => {
     const results = message.results;
@@ -119,13 +120,18 @@ function Popup() {
 
   const evaluateUrl = async () => {
     const determinedScore = getUpdatedConditions();
-    setScore(determinedScore);
+    score.current = determinedScore;
     setBlocked(
-      blocklist.some((blocklist) => siteData.hostname.includes(blocklist))
+      blocklist.current.some((blockitem) =>
+        siteData.hostname.includes(blockitem)
+      )
     );
-    setIsPhish(determinedScore >= 3);
+    setIsPhish(determinedScore >= PHISH_THRESHOLD);
 
-    if ((determinedScore >= PHISH_THRESHOLD || blocked) && !isIncognito) {
+    if (
+      (determinedScore >= PHISH_THRESHOLD || blocked) &&
+      !isIncognito.current
+    ) {
       if (scamSites.length === 0) {
         chrome.storage.sync.set({ scamSites: [siteData.hostname] });
         setScamSites([siteData.hostname]);
@@ -140,10 +146,10 @@ function Popup() {
   };
 
   useEffect(() => {
-    if (score === 0 || !started) {
-      setStarted(true);
+    if (score.current === 0 || !started.current) {
+      started.current = true;
       chrome.windows.getCurrent((window) => {
-        setIsIncognito(window.incognito);
+        isIncognito.current = window.incognito;
       });
 
       fetch(
@@ -152,15 +158,16 @@ function Popup() {
         .then(function (response) {
           if (response.status !== 200) {
             console.log(response.status);
-            return;
+            throw new Error('Failed to fetch hotlist');
           }
 
           response.json().then(function (data) {
-            setBlocklist(data);
+            blocklist.current = data;
           });
         })
         .catch(function (err) {
           console.log('Fetch Error: ', err);
+          blocklist.current = [];
         });
 
       if (scamSites === null) {
@@ -192,10 +199,10 @@ function Popup() {
   }, []);
 
   useEffect(() => {
-    if (score === 0 && blocklist && siteData.jsTags) {
+    if (score.current === 0 && blocklist.current && siteData.jsTags) {
       evaluateUrl();
     }
-  }, [blocklist, siteData.jsTags, evaluateUrl, score]);
+  }, [blocklist.current, siteData.jsTags, evaluateUrl, score.current]);
 
   return (
     <div className={`App ${(isPhish || blocked) && 'is-phishing'}`}>
