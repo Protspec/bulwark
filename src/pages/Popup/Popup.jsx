@@ -14,116 +14,103 @@ import {
 } from '../../utils/constants';
 
 function Popup() {
-  const [siteData, setSiteData] = useState({
-    hostname: null,
-    pathname: null,
-    title: null,
-    content: null,
-    metaTags: [null],
-    jsTags: null,
-  });
+  const [hostname, setHostname] = useState(null);
+  const [pathname, setPathname] = useState(null);
+  const [title, setTitle] = useState(null);
+  const [content, setContent] = useState(null);
+  const [metaTags, setMetaTags] = useState([null]);
+  const [jsTags, setJsTags] = useState(null);
   const [isPhish, setIsPhish] = useState(false);
   const [blocked, setBlocked] = useState(null);
-  const [scamSites, setScamSites] = useState(null);
+  const [scamSites, setScamSites] = useState([]);
   const [done, setDone] = useState(false);
 
-  const blocklist = useRef(null);
-  const score = useRef(0);
+  const blocklist = useRef([]);
+  const score = useRef(null);
   const started = useRef(false);
   const isIncognito = useRef(true);
 
-  const handleMessage = (message, sender, sendResponse) => {
+  const handleMessage = useCallback((message, sender, sendResponse) => {
     const results = message.results;
+
     if (results) {
       const [title, content, metaTags, scriptContents] = results;
-      setSiteData((prevData) => ({
-        ...prevData,
-        title,
-        content,
-        metaTags,
-        jsTags: scriptContents,
-      }));
+      setTitle(title);
+      setContent(content);
+      setMetaTags(metaTags);
+      setJsTags(scriptContents);
 
       chrome.runtime.onMessage.removeListener(handleMessage);
     }
-  };
+  });
 
   const getUpdatedConditions = useCallback(() => {
     let tempScore = 0;
 
     if (
-      siteData.hostname.split('.').some((part) => /-/.test(part)) ||
-      WEAK_HTML_KEYWORDS.some((keyword) =>
-        siteData.hostname.includes(keyword)
-      ) ||
-      DOMAIN_KEYWORDS.some((keyword) => siteData.hostname.includes(keyword)) ||
-      /^([^.]+\.){3,}/.test(siteData.hostname)
+      hostname.split('.').some((part) => /-/.test(part)) ||
+      WEAK_HTML_KEYWORDS.some((keyword) => hostname.includes(keyword)) ||
+      DOMAIN_KEYWORDS.some((keyword) => hostname.includes(keyword)) ||
+      /^([^.]+\.){3,}/.test(hostname)
     ) {
       tempScore += 1;
     }
 
     if (
       TLD_KEYWORDS.some((tld) =>
-        siteData.hostname.split('.').slice(-2).join('.').endsWith(tld)
+        hostname.split('.').slice(-2).join('.').endsWith(tld)
       )
     ) {
       tempScore += 1;
     }
 
+    if (WEAK_HTML_KEYWORDS.some((keyword) => pathname.includes(keyword))) {
+      tempScore += 1;
+    }
+
     if (
-      WEAK_HTML_KEYWORDS.some((keyword) => siteData.pathname.includes(keyword))
+      title &&
+      WEAK_HTML_KEYWORDS.some((keyword) => title.includes(keyword))
     ) {
       tempScore += 1;
     }
 
     if (
-      siteData.title &&
-      WEAK_HTML_KEYWORDS.some((keyword) => siteData.title.includes(keyword))
-    ) {
-      tempScore += 1;
-    }
-
-    if (
-      (siteData.metaTags[0] !== null &&
-        !siteData.metaTags[0].includes(siteData.hostname) &&
-        siteData.metaTags[0] !== '/') ||
+      (metaTags[0] !== null &&
+        !metaTags[0].includes(hostname) &&
+        metaTags[0] !== '/') ||
       false
     ) {
       tempScore += 1;
     }
 
     if (
-      siteData.content &&
-      WEAK_HTML_KEYWORDS.some((keyword) => siteData.content.includes(keyword))
+      content &&
+      WEAK_HTML_KEYWORDS.some((keyword) => content.includes(keyword))
     ) {
       tempScore += 1;
     }
 
-    if (
-      siteData.content &&
-      HTML_KEYWORDS.some((keyword) => siteData.content.includes(keyword))
-    ) {
+    if (content && HTML_KEYWORDS.some((keyword) => content.includes(keyword))) {
       tempScore += 1;
     }
 
-    if (siteData.jsTags && jsCheck(siteData.jsTags, WEAK_JS_KEYWORDS)) {
+    if (jsTags && jsCheck(jsTags, WEAK_JS_KEYWORDS)) {
       tempScore += 1;
     }
 
-    if (siteData.jsTags && jsCheck(siteData.jsTags, JS_KEYWORDS)) {
+    if (jsTags && jsCheck(jsTags, JS_KEYWORDS)) {
       tempScore += 2;
     }
 
     return tempScore;
-  }, [siteData]);
+  }, [hostname, pathname, jsTags, metaTags, title, content]);
 
   const evaluateUrl = async () => {
     const determinedScore = getUpdatedConditions();
     score.current = determinedScore;
     setBlocked(
-      blocklist.current.some((blockitem) =>
-        siteData.hostname.includes(blockitem)
-      )
+      blocklist.current.some((blockitem) => hostname.includes(blockitem))
     );
     setIsPhish(determinedScore >= PHISH_THRESHOLD);
 
@@ -131,11 +118,11 @@ function Popup() {
       (determinedScore >= PHISH_THRESHOLD || blocked) &&
       !isIncognito.current
     ) {
-      if (scamSites && scamSites.length === 0) {
-        chrome.storage.sync.set({ scamSites: [siteData.hostname] });
-        setScamSites([siteData.hostname]);
-      } else if (scamSites && !scamSites.includes(siteData.hostname)) {
-        const newScamSites = [...scamSites, siteData.hostname];
+      if (scamSites.length === 0) {
+        chrome.storage.sync.set({ scamSites: [hostname] });
+        setScamSites([hostname]);
+      } else if (!scamSites.includes(hostname)) {
+        const newScamSites = [...scamSites, hostname];
         chrome.storage.sync.set({ scamSites: newScamSites });
         setScamSites(newScamSites);
       }
@@ -144,49 +131,46 @@ function Popup() {
     setDone(true);
   };
 
+  const fetchBlocklist = async () => {
+    try {
+      const response = await fetch(
+        'https://raw.githubusercontent.com/phishfort/phishfort-lists/master/blacklists/hotlist.json'
+      );
+      if (!response.ok) {
+        throw new Error('Failed to fetch hotlist');
+      }
+      const data = await response.json();
+      return data;
+    } catch (err) {
+      return [];
+    }
+  };
+
   useEffect(() => {
-    if (score.current === 0 || !started.current) {
+    if (score.current === null || !started.current) {
       started.current = true;
+
       chrome.windows.getCurrent((window) => {
         isIncognito.current = window.incognito;
       });
 
-      fetch(
-        'https://raw.githubusercontent.com/phishfort/phishfort-lists/master/blacklists/hotlist.json'
-      )
-        .then(function (response) {
-          if (response.status !== 200) {
-            console.log(response.status);
-            throw new Error('Failed to fetch hotlist');
-          }
+      fetchBlocklist().then((data) => {
+        blocklist.current = data;
+      });
 
-          response.json().then(function (data) {
-            blocklist.current = data;
-          });
-        })
-        .catch(function (err) {
-          console.log('Fetch Error: ', err);
-          blocklist.current = [];
-        });
-
-      if (scamSites === null) {
-        chrome.storage.sync.get(['scamSites'], (result) => {
-          if (result.scamSites) {
-            setScamSites(result.scamSites);
-          } else {
-            setScamSites([]);
-          }
-        });
-      }
+      chrome.storage.sync.get(['scamSites'], (result) => {
+        if (result.scamSites) {
+          setScamSites(result.scamSites);
+        } else {
+          setScamSites([]);
+        }
+      });
 
       const queryOptions = { active: true, currentWindow: true };
       chrome.tabs.query(queryOptions, (tabs) => {
         const url = new URL(tabs[0].url);
-        setSiteData((prevData) => ({
-          ...prevData,
-          hostname: url.hostname.toLowerCase(),
-          pathname: url.pathname.toLowerCase(),
-        }));
+        setHostname(url.hostname.toLowerCase());
+        setPathname(url.pathname.toLowerCase());
 
         chrome.scripting.executeScript({
           target: { tabId: tabs[0].id },
@@ -195,13 +179,13 @@ function Popup() {
       });
       chrome.runtime.onMessage.addListener(handleMessage);
     }
-  }, []);
+  }, [score, started]);
 
   useEffect(() => {
-    if (score.current === 0 && blocklist.current && siteData.jsTags) {
+    if (score.current === null && blocklist.current && title) {
       evaluateUrl();
     }
-  }, [blocklist.current, siteData.jsTags, evaluateUrl, score.current]);
+  }, [blocklist.current, title, evaluateUrl]);
 
   return (
     <div className={`App ${(isPhish || blocked) && 'is-phishing'}`}>
@@ -213,7 +197,7 @@ function Popup() {
         }}
       >
         <h1 className="domain">
-          <span>{siteData.hostname}</span>
+          <span>{hostname}</span>
         </h1>
         <div className="explanation">
           {isPhish || blocked ? (
@@ -221,7 +205,7 @@ function Popup() {
               <h3 className="is-scam">DANGER</h3>
               <p className="is-scam">
                 {blocked
-                  ? 'This site has been reported as a crypto phishing scam.'
+                  ? 'This site has been reported as a crypto phishing scam by PhishFort.'
                   : 'Indicators that this site is a crypto phishing scam were detected.'}
               </p>
               <p className="is-scam">Do not interact with this site.</p>
@@ -260,24 +244,25 @@ const invokeContentScript = async () => {
   const scripts = Array.from(document.querySelectorAll('script[src]'));
   const host = window.location.host;
 
-  const scriptPromises = scripts.map((script) => {
-    if (
+  const fetchScripts = async (script) => {
+    try {
+      const response = await fetch(script.src);
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      return response.text();
+    } catch (error) {
+      console.error('Error fetching script:', error);
+    }
+  };
+
+  const validScripts = scripts.filter(
+    (script) =>
       script.src.toLowerCase().includes(host) &&
       !script.src.toLowerCase().includes('_next')
-    ) {
-      return fetch(script.src)
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-          }
-          return response.text();
-        })
-        .catch((error) => {
-          console.error('Error fetching script:', error);
-        });
-    }
-    return Promise.resolve(undefined);
-  });
+  );
+
+  const scriptPromises = validScripts.map(fetchScripts);
 
   const scriptContents = (await Promise.all(scriptPromises)).filter(
     (content) => content !== undefined
