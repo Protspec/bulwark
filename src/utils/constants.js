@@ -16,6 +16,7 @@ export const STRONG_HTML_KEYWORDS = [
   'obfuscation',
   'unescape(',
   'partner-address',
+  'data-wf-domain',
   'lorem.ipsum/npm/fallback.js',
 ];
 
