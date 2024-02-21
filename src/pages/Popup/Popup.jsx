@@ -4,6 +4,7 @@ import logo from '../../assets/img/logo.svg';
 import skull from '../../assets/img/skull.svg';
 import textSkull from '../../assets/img/text-skull.svg';
 import {
+  PHISH_THRESHOLD,
   HTML_KEYWORDS,
   WEAK_HTML_KEYWORDS,
   DOMAIN_KEYWORDS,
@@ -107,16 +108,14 @@ function Popup() {
     const determinedScore = getUpdatedConditions();
     setScore(determinedScore);
     setBlocked(blocklist.some((blocklist) => hostname.includes(blocklist)));
-    setIsPhish(determinedScore >= 3); // Use determinedScore instead of score
-    console.log(isIncognito);
+    setIsPhish(determinedScore >= 3);
 
-    if ((determinedScore >= 3 || blocked) && !isIncognito) {
-      // Use determinedScore instead of isPhish
+    if ((determinedScore >= PHISH_THRESHOLD || blocked) && !isIncognito) {
       if (scamSites.length === 0) {
         chrome.storage.sync.set({ scamSites: [hostname] });
         setScamSites([hostname]);
       } else if (!scamSites.includes(hostname)) {
-        let newScamSites = [...scamSites, hostname];
+        const newScamSites = [...scamSites, hostname];
         chrome.storage.sync.set({ scamSites: newScamSites });
         setScamSites(newScamSites);
       }
@@ -159,7 +158,7 @@ function Popup() {
         });
       }
 
-      let queryOptions = { active: true, currentWindow: true };
+      const queryOptions = { active: true, currentWindow: true };
       chrome.tabs.query(queryOptions, (tabs) => {
         const url = new URL(tabs[0].url);
         setHostname(url.hostname.toLowerCase());
@@ -204,13 +203,15 @@ function Popup() {
               <p className="is-scam">Do not interact with this site.</p>
             </>
           ) : (
-            <p className="is-benign">
+            <>
               {done ? (
-                <p className="is-benign">Not enough indicators detected</p>
+                <p className="is-benign">
+                  Not enough scam indicators detected.
+                </p>
               ) : (
                 <h3 className="is-benign">ANALYZING…</h3>
               )}
-            </p>
+            </>
           )}
         </div>
       </main>
@@ -234,14 +235,13 @@ async function invokeContentScript() {
 
   const scripts = Array.from(document.querySelectorAll('script[src]'));
   const host = window.location.host;
-  const scriptPromises = [];
 
-  scripts.forEach((script) => {
+  const scriptPromises = scripts.map((script) => {
     if (
       script.src.toLowerCase().includes(host) &&
       !script.src.toLowerCase().includes('_next')
     ) {
-      const promise = fetch(script.src)
+      return fetch(script.src)
         .then((response) => {
           if (!response.ok) {
             throw new Error(`HTTP error! Status: ${response.status}`);
@@ -251,9 +251,8 @@ async function invokeContentScript() {
         .catch((error) => {
           console.error('Error fetching script:', error);
         });
-
-      scriptPromises.push(promise);
     }
+    return Promise.resolve(undefined);
   });
 
   const scriptContents = (await Promise.all(scriptPromises)).filter(

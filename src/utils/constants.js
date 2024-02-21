@@ -1,3 +1,5 @@
+export const PHISH_THRESHOLD = 3;
+
 export const HTML_KEYWORDS = [
   'data-scrapbook-',
   'data-savepage-',
