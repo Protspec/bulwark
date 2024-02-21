@@ -108,6 +108,7 @@ function Popup() {
     setScore(determinedScore);
     setBlocked(blocklist.some((blocklist) => hostname.includes(blocklist)));
     setIsPhish(determinedScore >= 3); // Use determinedScore instead of score
+    console.log(isIncognito);
 
     if ((determinedScore >= 3 || blocked) && !isIncognito) {
       // Use determinedScore instead of isPhish
@@ -127,7 +128,9 @@ function Popup() {
   useEffect(() => {
     if (score === 0 || !started) {
       setStarted(true);
-      setIsIncognito(chrome.windows.getCurrent.isIncognito);
+      chrome.windows.getCurrent((window) => {
+        setIsIncognito(window.incognito);
+      });
 
       fetch(
         'https://raw.githubusercontent.com/phishfort/phishfort-lists/master/blacklists/hotlist.json'
