@@ -4,17 +4,16 @@ import logo from '../../assets/img/logo.svg';
 import skull from '../../assets/img/skull.svg';
 import textSkull from '../../assets/img/text-skull.svg';
 import {
-  INITIAL_CONDITIONS,
-  STRONG_HTML_KEYWORDS,
+  HTML_KEYWORDS,
   WEAK_HTML_KEYWORDS,
   DOMAIN_KEYWORDS,
   WEAK_JS_KEYWORDS,
-  STRONG_JS_KEYWORDS,
+  JS_KEYWORDS,
   TLD_KEYWORDS,
 } from '../../utils/constants';
 
 function Popup() {
-  const [conditions, setConditions] = useState(INITIAL_CONDITIONS);
+  const [conditions, setConditions] = useState(null);
   const [grade, setGrade] = useState(null);
   const [hostname, setHostname] = useState(null);
   const [pathname, setPathname] = useState(null);
@@ -43,35 +42,31 @@ function Popup() {
 
   const getUpdatedConditions = useCallback(
     () => ({
-      ...conditions,
-      'Detected in domain':
+      domain:
         hostname.split('.').some((part) => /-/.test(part)) ||
         WEAK_HTML_KEYWORDS.some((keyword) => hostname.includes(keyword)) ||
         DOMAIN_KEYWORDS.some((keyword) => hostname.includes(keyword)) ||
         /^([^.]+\.){3,}/.test(hostname),
-      'Detected in top-level domain': TLD_KEYWORDS.some((tld) =>
+      tld: TLD_KEYWORDS.some((tld) =>
         hostname.split('.').slice(-2).join('.').endsWith(tld)
       ),
-      'Detected in pathname': WEAK_HTML_KEYWORDS.some((keyword) =>
+      pathname: WEAK_HTML_KEYWORDS.some((keyword) =>
         pathname.includes(keyword)
       ),
-      'Detected in title':
+      title:
         title && WEAK_HTML_KEYWORDS.some((keyword) => title.includes(keyword)),
-      'Detected in metadata':
+      metadata:
         (metaTags[0] !== null &&
           !metaTags[0].includes(hostname) &&
           metaTags[0] !== '/') ||
         false,
-      'Detected in HTML':
+      weakhtml:
         content &&
         WEAK_HTML_KEYWORDS.some((keyword) => content.includes(keyword)),
-      'Detected in HTML (STRONG)':
-        content &&
-        STRONG_HTML_KEYWORDS.some((keyword) => content.includes(keyword)),
-      'Detected in JS': jsTags ? jsCheck(jsTags, WEAK_JS_KEYWORDS) : false,
-      'Detected in JS (STRONG)': jsTags
-        ? jsCheck(jsTags, STRONG_JS_KEYWORDS)
-        : false,
+      html:
+        content && HTML_KEYWORDS.some((keyword) => content.includes(keyword)),
+      weakjs: jsTags ? jsCheck(jsTags, WEAK_JS_KEYWORDS) : false,
+      js: jsTags ? jsCheck(jsTags, JS_KEYWORDS) : false,
     }),
     [hostname, pathname, jsTags, conditions, metaTags, title, content]
   );
@@ -191,12 +186,13 @@ function Popup() {
             <span>{blocked === null ? '❓' : blocked ? '❌' : '〰️'}</span>{' '}
             Recently added to blocklist
           </li>
-          {Object.entries(conditions).map(([condition, value], index) => (
-            <li key={index} className={`${!value && 'null'}`}>
-              <span>{value === null ? '❓' : value ? '❌' : '〰️'}</span>{' '}
-              {condition}
-            </li>
-          ))}
+          {conditions &&
+            Object.entries(conditions).map(([condition, value], index) => (
+              <li key={index} className={`${!value && 'null'}`}>
+                <span>{value === null ? '❓' : value ? '❌' : '〰️'}</span>{' '}
+                {condition}
+              </li>
+            ))}
         </ul>
       </main>
       <footer className="footer">

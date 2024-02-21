@@ -1,16 +1,4 @@
-export const INITIAL_CONDITIONS = {
-  'Detected in domain': null,
-  'Detected in top-level domain': null,
-  'Detected in pathname': null,
-  'Detected in title': null,
-  'Detected in metadata': null,
-  'Detected in HTML': null,
-  'Detected in HTML (STRONG)': null,
-  'Detected in JS': null,
-  'Detected in JS (STRONG)': null,
-};
-
-export const STRONG_HTML_KEYWORDS = [
+export const HTML_KEYWORDS = [
   'data-scrapbook-',
   'data-savepage-',
   'obfuscation',
@@ -33,7 +21,7 @@ export const WEAK_HTML_KEYWORDS = [
 
 export const DOMAIN_KEYWORDS = ['usdt', 'usdc', 'wl', 'claim', 'whitelist'];
 
-export const STRONG_JS_KEYWORDS = [
+export const JS_KEYWORDS = [
   'draining',
   'minimalDrainValue',
   'victim',
