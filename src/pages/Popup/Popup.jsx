@@ -23,6 +23,7 @@ function Popup() {
   const [isPhish, setIsPhish] = useState(false);
   const [blocked, setBlocked] = useState(null);
   const [scamSites, setScamSites] = useState([]);
+  const [cantScan, setCantScan] = useState(false);
   const [done, setDone] = useState(false);
 
   const blocklist = useRef([]);
@@ -150,34 +151,41 @@ function Popup() {
     if (score.current === null || !started.current) {
       started.current = true;
 
-      chrome.windows.getCurrent((window) => {
-        isIncognito.current = window.incognito;
-      });
-
-      fetchBlocklist().then((data) => {
-        blocklist.current = data;
-      });
-
-      chrome.storage.sync.get(['scamSites'], (result) => {
-        if (result.scamSites) {
-          setScamSites(result.scamSites);
-        } else {
-          setScamSites([]);
-        }
-      });
-
       const queryOptions = { active: true, currentWindow: true };
       chrome.tabs.query(queryOptions, (tabs) => {
         const url = new URL(tabs[0].url);
-        setHostname(url.hostname.toLowerCase());
-        setPathname(url.pathname.toLowerCase());
 
-        chrome.scripting.executeScript({
-          target: { tabId: tabs[0].id },
-          function: invokeContentScript,
-        });
+        if (url.toString().startsWith('chrome://')) {
+          setCantScan(true);
+          return undefined;
+        } else {
+          setHostname(url.hostname.toLowerCase());
+          setPathname(url.pathname.toLowerCase());
+
+          chrome.scripting.executeScript({
+            target: { tabId: tabs[0].id },
+            function: invokeContentScript,
+          });
+
+          chrome.windows.getCurrent((window) => {
+            isIncognito.current = window.incognito;
+          });
+
+          fetchBlocklist().then((data) => {
+            blocklist.current = data;
+          });
+
+          chrome.storage.sync.get(['scamSites'], (result) => {
+            if (result.scamSites) {
+              setScamSites(result.scamSites);
+            } else {
+              setScamSites([]);
+            }
+          });
+
+          chrome.runtime.onMessage.addListener(handleMessage);
+        }
       });
-      chrome.runtime.onMessage.addListener(handleMessage);
     }
   }, [score, started]);
 
@@ -196,32 +204,9 @@ function Popup() {
           backgroundSize: `50%`,
         }}
       >
-        <h1 className="domain">
-          <span>{hostname}</span>
-        </h1>
-        <div className="explanation">
-          {isPhish || blocked ? (
-            <>
-              <h3 className="is-scam">DANGER</h3>
-              <p className="is-scam">
-                {blocked
-                  ? 'This site has been reported as a crypto phishing scam by PhishFort.'
-                  : 'Indicators that this site is a crypto phishing scam were detected.'}
-              </p>
-              <p className="is-scam">Do not interact with this site.</p>
-            </>
-          ) : (
-            <>
-              {done ? (
-                <p className="is-benign">
-                  Not enough scam indicators detected.
-                </p>
-              ) : (
-                <h3 className="is-benign">ANALYZING…</h3>
-              )}
-            </>
-          )}
-        </div>
+        {cantScan
+          ? renderBlockedScan()
+          : renderMainContent(hostname, blocked, isPhish || blocked, done)}
       </main>
       <footer className="footer">
         <a href="https://protspec.com" target="_blank" rel="noreferrer">
@@ -235,6 +220,55 @@ function Popup() {
     </div>
   );
 }
+
+const renderBlockedScan = () => {
+  return (
+    <>
+      <h1 className="domain">
+        <span>Restricted browser page</span>
+      </h1>
+      <div className="explanation">
+        <p className="is-benign">This page cannot be scanned.</p>
+      </div>
+    </>
+  );
+};
+
+const renderMainContent = (
+  hostname,
+  blocked,
+  firstCondition,
+  secondCondition
+) => {
+  return (
+    <>
+      <h1 className="domain">
+        <span>{hostname}</span>
+      </h1>
+      <div className="explanation">
+        {firstCondition ? (
+          <>
+            <h3 className="is-scam">DANGER</h3>
+            <p className="is-scam">
+              {blocked
+                ? 'This site has been reported as a crypto phishing scam by PhishFort.'
+                : 'Indicators that this site is a crypto phishing scam were detected.'}
+            </p>
+            <p className="is-scam">Do not interact with this site.</p>
+          </>
+        ) : (
+          <>
+            {secondCondition ? (
+              <p className="is-benign">Not enough scam indicators detected.</p>
+            ) : (
+              <h3 className="is-benign">ANALYZING…</h3>
+            )}
+          </>
+        )}
+      </div>
+    </>
+  );
+};
 
 const invokeContentScript = async () => {
   const metaOgUrl = document.querySelector('meta[property="og:url"]');
