@@ -14,14 +14,16 @@ import {
 } from '../../utils/constants';
 
 function Popup() {
+  const [siteData, setSiteData] = useState({
+    hostname: null,
+    pathname: null,
+    title: null,
+    content: null,
+    metaTags: [null],
+    jsTags: null,
+  });
   const [score, setScore] = useState(0);
   const [isPhish, setIsPhish] = useState(false);
-  const [hostname, setHostname] = useState(null);
-  const [pathname, setPathname] = useState(null);
-  const [title, setTitle] = useState(null);
-  const [content, setContent] = useState(null);
-  const [metaTags, setMetaTags] = useState([null]);
-  const [jsTags, setJsTags] = useState(null);
   const [blocklist, setBlocklist] = useState(null);
   const [blocked, setBlocked] = useState(null);
   const [scamSites, setScamSites] = useState(null);
@@ -33,89 +35,102 @@ function Popup() {
     const results = message.results;
     if (results) {
       const [title, content, metaTags, scriptContents] = results;
-      setTitle(title);
-      setContent(content);
-      setMetaTags(metaTags);
-      setJsTags(scriptContents);
+      setSiteData((prevData) => ({
+        ...prevData,
+        title,
+        content,
+        metaTags,
+        jsTags: scriptContents,
+      }));
 
       chrome.runtime.onMessage.removeListener(handleMessage);
     }
   };
 
   const getUpdatedConditions = useCallback(() => {
+    console.log(siteData);
     let tempScore = 0;
 
     if (
-      hostname.split('.').some((part) => /-/.test(part)) ||
-      WEAK_HTML_KEYWORDS.some((keyword) => hostname.includes(keyword)) ||
-      DOMAIN_KEYWORDS.some((keyword) => hostname.includes(keyword)) ||
-      /^([^.]+\.){3,}/.test(hostname)
+      siteData.hostname.split('.').some((part) => /-/.test(part)) ||
+      WEAK_HTML_KEYWORDS.some((keyword) =>
+        siteData.hostname.includes(keyword)
+      ) ||
+      DOMAIN_KEYWORDS.some((keyword) => siteData.hostname.includes(keyword)) ||
+      /^([^.]+\.){3,}/.test(siteData.hostname)
     ) {
       tempScore += 1;
     }
 
     if (
       TLD_KEYWORDS.some((tld) =>
-        hostname.split('.').slice(-2).join('.').endsWith(tld)
+        siteData.hostname.split('.').slice(-2).join('.').endsWith(tld)
       )
     ) {
       tempScore += 1;
     }
 
-    if (WEAK_HTML_KEYWORDS.some((keyword) => pathname.includes(keyword))) {
-      tempScore += 1;
-    }
-
     if (
-      title &&
-      WEAK_HTML_KEYWORDS.some((keyword) => title.includes(keyword))
+      WEAK_HTML_KEYWORDS.some((keyword) => siteData.pathname.includes(keyword))
     ) {
       tempScore += 1;
     }
 
     if (
-      (metaTags[0] !== null &&
-        !metaTags[0].includes(hostname) &&
-        metaTags[0] !== '/') ||
+      siteData.title &&
+      WEAK_HTML_KEYWORDS.some((keyword) => siteData.title.includes(keyword))
+    ) {
+      tempScore += 1;
+    }
+
+    if (
+      (siteData.metaTags[0] !== null &&
+        !siteData.metaTags[0].includes(siteData.hostname) &&
+        siteData.metaTags[0] !== '/') ||
       false
     ) {
       tempScore += 1;
     }
 
     if (
-      content &&
-      WEAK_HTML_KEYWORDS.some((keyword) => content.includes(keyword))
+      siteData.content &&
+      WEAK_HTML_KEYWORDS.some((keyword) => siteData.content.includes(keyword))
     ) {
       tempScore += 1;
     }
 
-    if (content && HTML_KEYWORDS.some((keyword) => content.includes(keyword))) {
+    if (
+      siteData.content &&
+      HTML_KEYWORDS.some((keyword) => siteData.content.includes(keyword))
+    ) {
       tempScore += 1;
     }
 
-    if (jsTags && jsCheck(jsTags, WEAK_JS_KEYWORDS)) {
+    if (siteData.jsTags && jsCheck(siteData.jsTags, WEAK_JS_KEYWORDS)) {
       tempScore += 1;
     }
 
-    if (jsTags && jsCheck(jsTags, JS_KEYWORDS)) {
+    if (siteData.jsTags && jsCheck(siteData.jsTags, JS_KEYWORDS)) {
       tempScore += 2;
     }
 
     return tempScore;
-  }, [hostname, pathname, jsTags, metaTags, title, content]);
+  }, [siteData]);
 
   const evaluateUrl = async () => {
     const determinedScore = getUpdatedConditions();
     setScore(determinedScore);
-    setBlocked(blocklist.some((blocklist) => hostname.includes(blocklist)));
+    setBlocked(
+      blocklist.some((blocklist) => siteData.hostname.includes(blocklist))
+    );
     setIsPhish(determinedScore >= 3);
 
     if ((determinedScore >= PHISH_THRESHOLD || blocked) && !isIncognito) {
       if (scamSites.length === 0) {
-        chrome.storage.sync.set({ scamSites: [hostname] });
-        setScamSites([hostname]);
-      } else if (!scamSites.includes(hostname)) {
-        const newScamSites = [...scamSites, hostname];
+        chrome.storage.sync.set({ scamSites: [siteData.hostname] });
+        setScamSites([siteData.hostname]);
+      } else if (!scamSites.includes(siteData.hostname)) {
+        const newScamSites = [...scamSites, siteData.hostname];
         chrome.storage.sync.set({ scamSites: newScamSites });
         setScamSites(newScamSites);
       }
@@ -161,8 +176,11 @@ function Popup() {
       const queryOptions = { active: true, currentWindow: true };
       chrome.tabs.query(queryOptions, (tabs) => {
         const url = new URL(tabs[0].url);
-        setHostname(url.hostname.toLowerCase());
-        setPathname(url.pathname.toLowerCase());
+        setSiteData((prevData) => ({
+          ...prevData,
+          hostname: url.hostname.toLowerCase(),
+          pathname: url.pathname.toLowerCase(),
+        }));
 
         chrome.scripting.executeScript({
           target: { tabId: tabs[0].id },
@@ -174,10 +192,10 @@ function Popup() {
   }, []);
 
   useEffect(() => {
-    if (score === 0 && blocklist && jsTags) {
+    if (score === 0 && blocklist && siteData.jsTags) {
       evaluateUrl();
     }
-  }, [blocklist, jsTags, evaluateUrl, score]);
+  }, [blocklist, siteData.jsTags, evaluateUrl, score]);
 
   return (
     <div className={`App ${(isPhish || blocked) && 'is-phishing'}`}>
@@ -189,7 +207,7 @@ function Popup() {
         }}
       >
         <h1 className="domain">
-          <span>{hostname}</span>
+          <span>{siteData.hostname}</span>
         </h1>
         <div className="explanation">
           {isPhish || blocked ? (
