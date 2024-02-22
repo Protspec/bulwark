@@ -83,21 +83,6 @@ function Popup() {
     setDone(true);
   };
 
-  const fetchBlocklist = async () => {
-    try {
-      const response = await fetch(
-        'https://raw.githubusercontent.com/phishfort/phishfort-lists/master/blacklists/hotlist.json'
-      );
-      if (!response.ok) {
-        throw new Error('Failed to fetch hotlist');
-      }
-      const data = await response.json();
-      return data;
-    } catch (err) {
-      return [];
-    }
-  };
-
   useEffect(() => {
     if (score.current === null || !started.current) {
       started.current = true;
@@ -262,6 +247,21 @@ const invokeContentScript = async () => {
   ];
 
   chrome.runtime.sendMessage({ results });
+};
+
+const fetchBlocklist = async () => {
+  try {
+    const response = await fetch(
+      'https://raw.githubusercontent.com/phishfort/phishfort-lists/master/blacklists/hotlist.json'
+    );
+    if (!response.ok) {
+      throw new Error('Failed to fetch hotlist');
+    }
+    const data = await response.json();
+    return data;
+  } catch (err) {
+    return [];
+  }
 };
 
 const getUpdatedConditions = (
