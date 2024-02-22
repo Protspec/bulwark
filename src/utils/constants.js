@@ -27,12 +27,18 @@ export const DOMAIN_KEYWORDS = ['usdt', 'usdc', 'wl', 'claim', 'whitelist'];
 
 export const JS_KEYWORDS = [
   'draining',
+  'drainerAddress',
   'minimalDrainValue',
   'victim',
-  'cryptopunk',
 ];
 
-export const WEAK_JS_KEYWORDS = ['seaport', 'x2y2', 'moonbird', 'moon_bird'];
+export const WEAK_JS_KEYWORDS = [
+  'seaport',
+  'x2y2',
+  'moonbird',
+  'moon_bird',
+  'cryptopunk',
+];
 
 export const TLD_KEYWORDS = [
   '.ru',
