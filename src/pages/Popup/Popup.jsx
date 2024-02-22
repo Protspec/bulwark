@@ -1,10 +1,4 @@
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import './Popup.css';
 import logo from '../../assets/img/logo.svg';
 import skull from '../../assets/img/skull.svg';
