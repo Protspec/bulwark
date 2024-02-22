@@ -1,6 +1,6 @@
 {
   "name": "bulwark",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Crypto scam detection for cryptonatives",
   "license": "MIT",
   "scripts": {

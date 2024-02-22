@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Bulwark",
-  "description": "Crypto scam detection for cryptonatives",
+  "description": "Phishing scam detection for cryptonatives.",
   "action": {
     "default_popup": "popup.html",
     "default_icon": "icon-34.png"
