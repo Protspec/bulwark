@@ -202,10 +202,10 @@ function Popup() {
   }, [score, started]);
 
   useEffect(() => {
-    if (score.current === null && blocklist.current && title) {
+    if (score.current === null && blocklist.current && content) {
       evaluateUrl();
     }
-  }, [blocklist.current, title, evaluateUrl]);
+  }, [blocklist.current, content, evaluateUrl]);
 
   return (
     <div className={`App ${(isPhish || blocked) && 'is-phishing'}`}>
