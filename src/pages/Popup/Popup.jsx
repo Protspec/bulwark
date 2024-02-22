@@ -166,36 +166,37 @@ function Popup() {
       chrome.tabs.query(queryOptions, (tabs) => {
         const url = new URL(tabs[0].url);
 
-        if (url.toString().startsWith('chrome://')) {
-          setCantScan(true);
-          return undefined;
-        } else {
-          setHostname(url.hostname.toLowerCase());
-          setPathname(url.pathname.toLowerCase());
+        setHostname(url.hostname.toLowerCase());
+        setPathname(url.pathname.toLowerCase());
 
-          chrome.scripting.executeScript({
+        chrome.scripting
+          .executeScript({
             target: { tabId: tabs[0].id },
             function: invokeContentScript,
+          })
+          .catch((error) => {
+            console.log(error);
+            setCantScan(true);
+            return undefined;
           });
 
-          chrome.windows.getCurrent((window) => {
-            isIncognito.current = window.incognito;
-          });
+        chrome.windows.getCurrent((window) => {
+          isIncognito.current = window.incognito;
+        });
 
-          fetchBlocklist().then((data) => {
-            blocklist.current = data;
-          });
+        fetchBlocklist().then((data) => {
+          blocklist.current = data;
+        });
 
-          chrome.storage.sync.get(['scamSites'], (result) => {
-            if (result.scamSites) {
-              setScamSites(result.scamSites);
-            } else {
-              setScamSites([]);
-            }
-          });
+        chrome.storage.sync.get(['scamSites'], (result) => {
+          if (result.scamSites) {
+            setScamSites(result.scamSites);
+          } else {
+            setScamSites([]);
+          }
+        });
 
-          chrome.runtime.onMessage.addListener(handleMessage);
-        }
+        chrome.runtime.onMessage.addListener(handleMessage);
       });
     }
   }, [score, started]);
