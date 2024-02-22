@@ -1,10 +1,4 @@
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import './Popup.css';
 import logo from '../../assets/img/logo.svg';
 import skull from '../../assets/img/skull.svg';
@@ -51,75 +45,15 @@ function Popup() {
     }
   });
 
-  const getUpdatedConditions = useMemo(() => {
-    let tempScore = 0;
-
-    if (
-      hostname &&
-      (hostname.split('.').some((part) => /-/.test(part)) ||
-        WEAK_HTML_KEYWORDS.some((keyword) => hostname.includes(keyword)) ||
-        DOMAIN_KEYWORDS.some((keyword) => hostname.includes(keyword)) ||
-        /^([^.]+\.){3,}/.test(hostname))
-    ) {
-      tempScore += 1;
-    }
-
-    if (
-      hostname &&
-      TLD_KEYWORDS.some((tld) =>
-        hostname.split('.').slice(-2).join('.').endsWith(tld)
-      )
-    ) {
-      tempScore += 1;
-    }
-
-    if (
-      pathname &&
-      WEAK_HTML_KEYWORDS.some((keyword) => pathname.includes(keyword))
-    ) {
-      tempScore += 1;
-    }
-
-    if (
-      title &&
-      WEAK_HTML_KEYWORDS.some((keyword) => title.includes(keyword))
-    ) {
-      tempScore += 1;
-    }
-
-    if (
-      (metaTags[0] !== null &&
-        !metaTags[0].includes(hostname) &&
-        metaTags[0] !== '/') ||
-      false
-    ) {
-      tempScore += 1;
-    }
-
-    if (
-      content &&
-      WEAK_HTML_KEYWORDS.some((keyword) => content.includes(keyword))
-    ) {
-      tempScore += 1;
-    }
-
-    if (content && HTML_KEYWORDS.some((keyword) => content.includes(keyword))) {
-      tempScore += 1;
-    }
-
-    if (jsTags && jsCheck(jsTags, WEAK_JS_KEYWORDS)) {
-      tempScore += 1;
-    }
-
-    if (jsTags && jsCheck(jsTags, JS_KEYWORDS)) {
-      tempScore += 2;
-    }
-
-    return tempScore;
-  }, [hostname, pathname, jsTags, metaTags, title, content]);
-
   const evaluateUrl = async () => {
-    const determinedScore = getUpdatedConditions;
+    const determinedScore = getUpdatedConditions(
+      hostname,
+      pathname,
+      jsTags,
+      metaTags,
+      title,
+      content
+    );
     score.current = determinedScore;
     setBlocked(
       blocklist.current.some((blockitem) => hostname.includes(blockitem))
@@ -143,21 +77,6 @@ function Popup() {
     setDone(true);
   };
 
-  const fetchBlocklist = async () => {
-    try {
-      const response = await fetch(
-        'https://raw.githubusercontent.com/phishfort/phishfort-lists/master/blacklists/hotlist.json'
-      );
-      if (!response.ok) {
-        throw new Error('Failed to fetch hotlist');
-      }
-      const data = await response.json();
-      return data;
-    } catch (err) {
-      return [];
-    }
-  };
-
   useEffect(() => {
     if (score.current === null || !started.current) {
       started.current = true;
@@ -166,45 +85,46 @@ function Popup() {
       chrome.tabs.query(queryOptions, (tabs) => {
         const url = new URL(tabs[0].url);
 
-        if (url.toString().startsWith('chrome://')) {
-          setCantScan(true);
-          return undefined;
-        } else {
-          setHostname(url.hostname.toLowerCase());
-          setPathname(url.pathname.toLowerCase());
+        setHostname(url.hostname.toLowerCase());
+        setPathname(url.pathname.toLowerCase());
 
-          chrome.scripting.executeScript({
+        chrome.scripting
+          .executeScript({
             target: { tabId: tabs[0].id },
             function: invokeContentScript,
+          })
+          .catch((error) => {
+            console.log(error);
+            setCantScan(true);
+            return undefined;
           });
 
-          chrome.windows.getCurrent((window) => {
-            isIncognito.current = window.incognito;
-          });
+        chrome.windows.getCurrent((window) => {
+          isIncognito.current = window.incognito;
+        });
 
-          fetchBlocklist().then((data) => {
-            blocklist.current = data;
-          });
+        fetchBlocklist().then((data) => {
+          blocklist.current = data;
+        });
 
-          chrome.storage.sync.get(['scamSites'], (result) => {
-            if (result.scamSites) {
-              setScamSites(result.scamSites);
-            } else {
-              setScamSites([]);
-            }
-          });
+        chrome.storage.sync.get(['scamSites'], (result) => {
+          if (result.scamSites) {
+            setScamSites(result.scamSites);
+          } else {
+            setScamSites([]);
+          }
+        });
 
-          chrome.runtime.onMessage.addListener(handleMessage);
-        }
+        chrome.runtime.onMessage.addListener(handleMessage);
       });
     }
   }, [score, started]);
 
   useEffect(() => {
-    if (score.current === null && blocklist.current && title) {
+    if (score.current === null && blocklist.current && content && hostname) {
       evaluateUrl();
     }
-  }, [blocklist.current, title, evaluateUrl]);
+  }, [blocklist.current, content, hostname, evaluateUrl]);
 
   return (
     <div className={`App ${(isPhish || blocked) && 'is-phishing'}`}>
@@ -321,6 +241,92 @@ const invokeContentScript = async () => {
   ];
 
   chrome.runtime.sendMessage({ results });
+};
+
+const fetchBlocklist = async () => {
+  try {
+    const response = await fetch(
+      'https://raw.githubusercontent.com/phishfort/phishfort-lists/master/blacklists/hotlist.json'
+    );
+    if (!response.ok) {
+      throw new Error('Failed to fetch hotlist');
+    }
+    const data = await response.json();
+    return data;
+  } catch (err) {
+    return [];
+  }
+};
+
+const getUpdatedConditions = (
+  hostname,
+  pathname,
+  jsTags,
+  metaTags,
+  title,
+  content
+) => {
+  let tempScore = 0;
+
+  if (
+    hostname &&
+    (hostname.split('.').some((part) => /-/.test(part)) ||
+      WEAK_HTML_KEYWORDS.some((keyword) => hostname.includes(keyword)) ||
+      DOMAIN_KEYWORDS.some((keyword) => hostname.includes(keyword)) ||
+      /^([^.]+\.){3,}/.test(hostname))
+  ) {
+    tempScore += 1;
+  }
+
+  if (
+    hostname &&
+    TLD_KEYWORDS.some((tld) =>
+      hostname.split('.').slice(-2).join('.').endsWith(tld)
+    )
+  ) {
+    tempScore += 1;
+  }
+
+  if (
+    pathname &&
+    WEAK_HTML_KEYWORDS.some((keyword) => pathname.includes(keyword))
+  ) {
+    tempScore += 1;
+  }
+
+  if (title && WEAK_HTML_KEYWORDS.some((keyword) => title.includes(keyword))) {
+    tempScore += 1;
+  }
+
+  if (
+    (metaTags[0] !== null &&
+      !metaTags[0].includes(hostname) &&
+      metaTags[0] !== '/') ||
+    false
+  ) {
+    tempScore += 1;
+  }
+
+  if (
+    content &&
+    WEAK_HTML_KEYWORDS.some((keyword) => content.includes(keyword))
+  ) {
+    tempScore += 1;
+  }
+
+  if (content && HTML_KEYWORDS.some((keyword) => content.includes(keyword))) {
+    tempScore += 1;
+  }
+
+  if (jsTags && jsCheck(jsTags, WEAK_JS_KEYWORDS)) {
+    tempScore += 1;
+  }
+
+  if (jsTags && jsCheck(jsTags, JS_KEYWORDS)) {
+    tempScore += 2;
+  }
+
+  return tempScore;
 };
 
 const jsCheck = (scripts, list) => {

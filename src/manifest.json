@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Bulwark",
-  "description": "Phishing scam detection for cryptonatives.",
+  "description": "Bulwark is a browser extension that detects crypto phishing scams.",
   "action": {
     "default_popup": "popup.html",
     "default_icon": "icon-34.png"
