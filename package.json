@@ -1,6 +1,6 @@
 {
   "name": "bulwark",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Bulwark is a browser extension that detects crypto phishing scams.",
   "license": "MIT",
   "scripts": {
