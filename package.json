@@ -56,5 +56,11 @@
     "webpack-cli": "^5.1.4",
     "webpack-dev-server": "^5.0.2",
     "zip-webpack-plugin": "^4.0.1"
+  },
+  "pnpm": {
+    "overrides": {
+      "@babel/traverse@<7.23.2": ">=7.23.2",
+      "follow-redirects@<1.15.4": ">=1.15.4"
+    }
   }
 }
