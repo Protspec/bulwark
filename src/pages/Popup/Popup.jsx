@@ -20,7 +20,11 @@ import {
 } from '../../utils/constants';
 import DisableDevtool from 'disable-devtool';
 
-DisableDevtool({ disableMenu: false });
+chrome.management.getSelf((self) => {
+  if (self.installType !== 'development') {
+    DisableDevtool({ disableMenu: true });
+  }
+});
 
 function Popup() {
   const [hostname, setHostname] = useState(null);
