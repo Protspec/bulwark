@@ -5,6 +5,7 @@
   "license": "MIT",
   "scripts": {
     "build": "node utils/build.js",
+    "prod": "NODE_ENV=production npm run build",
     "start": "node utils/webserver.js",
     "prettier": "prettier --write '**/*.{js,jsx,ts,tsx,json,css,scss,md}'",
     "lint:fix": "eslint --fix --ext .js,.jsx,.ts,.tsx ./src"
