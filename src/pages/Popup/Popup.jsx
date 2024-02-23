@@ -18,6 +18,9 @@ import {
   JS_KEYWORDS,
   TLD_KEYWORDS,
 } from '../../utils/constants';
+import DisableDevtool from 'disable-devtool';
+
+DisableDevtool({ disableMenu: false });
 
 function Popup() {
   const [hostname, setHostname] = useState(null);
