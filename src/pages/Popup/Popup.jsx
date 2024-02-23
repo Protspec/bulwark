@@ -12,6 +12,13 @@ import {
   JS_KEYWORDS,
   TLD_KEYWORDS,
 } from '../../utils/constants';
+import DisableDevtool from 'disable-devtool';
+
+chrome.management.getSelf((self) => {
+  if (self.installType !== 'development') {
+    DisableDevtool({ disableMenu: true });
+  }
+});
 
 function Popup() {
   const [hostname, setHostname] = useState(null);
