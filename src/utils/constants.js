@@ -21,7 +21,6 @@ export const STRONG_HTML_KEYWORDS = [
 
 export const WEAK_HTML_KEYWORDS = [
   'unprecedented',
-  'embrace',
   'limited time',
   'embrace',
   'kindly',
