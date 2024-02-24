@@ -32,6 +32,7 @@ export const DOMAIN_KEYWORDS = [
   'claim',
   'whitelist',
   'web.app',
+  'vercel.app',
 ];
 
 export const JS_KEYWORDS = [
@@ -39,6 +40,8 @@ export const JS_KEYWORDS = [
   'victim',
   'function _0x',
   '(function(_0x',
+  'enter your private key',
+  'enter your recovery phrase',
 ];
 
 export const STRONG_JS_KEYWORDS = ['victim_to_pay', 'minimaldrainvalue'];
