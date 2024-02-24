@@ -11,6 +11,7 @@ export const HTML_KEYWORDS = [
   'data-wf-domain',
   'lorem.ipsum/npm/fallback.js',
   'function _0x',
+  '(function(_0x',
 ];
 
 export const WEAK_HTML_KEYWORDS = [
@@ -35,11 +36,13 @@ export const DOMAIN_KEYWORDS = [
 
 export const JS_KEYWORDS = [
   'draining',
-  'drainerAddress',
-  'minimalDrainValue',
+  'draineraddress',
   'victim',
   'function _0x',
+  '(function(_0x',
 ];
+
+export const STRONG_JS_KEYWORDS = ['victim_to_pay', 'minimaldrainvalue'];
 
 export const WEAK_JS_KEYWORDS = [
   'seaport',

@@ -9,6 +9,7 @@ import {
   WEAK_HTML_KEYWORDS,
   DOMAIN_KEYWORDS,
   WEAK_JS_KEYWORDS,
+  STRONG_JS_KEYWORDS,
   JS_KEYWORDS,
   TLD_KEYWORDS,
 } from '../../utils/constants';
@@ -354,22 +355,21 @@ const getUpdatedConditions = (
   if (jsTags && jsCheck(jsTags, JS_KEYWORDS)) {
     tempScore += 2;
   }
+  if (jsTags && jsCheck(jsTags, STRONG_JS_KEYWORDS)) {
+    console.log('strong js');
+    tempScore += 3;
+  }
 
   return tempScore;
 };
 
 const jsCheck = (scripts, list) => {
   const keywords = list;
-  let result = false;
-  scripts.forEach((script) => {
-    result =
-      result ||
-      keywords.some((keyword) => {
+  return scripts.some((script) => {
+    return keywords.some((keyword) => {
         return script.toLowerCase().includes(keyword);
       });
   });
-
-  return result;
 };
 
 export default Popup;
