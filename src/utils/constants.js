@@ -3,18 +3,24 @@ export const PHISH_THRESHOLD = 3;
 export const TIMEOUT = 4000;
 
 export const HTML_KEYWORDS = [
-  'data-scrapbook-',
-  'data-savepage-',
   'obfuscation',
   'unescape(',
   'partner-address',
   'data-wf-domain',
   'lorem.ipsum/npm/fallback.js',
+  'function _0x',
+  '(function(_0x',
+];
+
+export const STRONG_HTML_KEYWORDS = [
+  'data-scrapbook-',
+  'data-savepage-',
+  'saved with singlefile',
+  'httrack website copier',
 ];
 
 export const WEAK_HTML_KEYWORDS = [
   'unprecedented',
-  'embrace',
   'limited time',
   'embrace',
   'kindly',
@@ -23,16 +29,31 @@ export const WEAK_HTML_KEYWORDS = [
   'drain',
 ];
 
-export const DOMAIN_KEYWORDS = ['usdt', 'usdc', 'wl', 'claim', 'whitelist'];
-
-export const JS_KEYWORDS = [
-  'draining',
-  'drainerAddress',
-  'minimalDrainValue',
-  'victim',
+export const DOMAIN_KEYWORDS = [
+  'usdt',
+  'usdc',
+  'wl',
+  'claim',
+  'whitelist',
+  'web.app',
+  'vercel.app',
+  'pages.dev',
 ];
 
+export const JS_KEYWORDS = [
+  'draineraddress',
+  'victim',
+  'function _0x',
+  '(function(_0x',
+  'enter your private key',
+  'enter your recovery phrase',
+  '#privatekey',
+];
+
+export const STRONG_JS_KEYWORDS = ['victim_to_pay', 'minimaldrainvalue'];
+
 export const WEAK_JS_KEYWORDS = [
+  'draining',
   'seaport',
   'x2y2',
   'moonbird',
@@ -64,4 +85,5 @@ export const TLD_KEYWORDS = [
   '.bid',
   '.estate',
   '.digital',
+  '.support',
 ];
