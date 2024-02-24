@@ -279,8 +279,14 @@ const getUpdatedConditions = (
     hostname &&
     (hostname.split('.').some((part) => /-/.test(part)) ||
       WEAK_HTML_KEYWORDS.some((keyword) => hostname.includes(keyword)) ||
-      DOMAIN_KEYWORDS.some((keyword) => hostname.includes(keyword)) ||
       /^([^.]+\.){3,}/.test(hostname))
+  ) {
+    tempScore += 1;
+  }
+
+  if (
+    hostname &&
+    DOMAIN_KEYWORDS.some((keyword) => hostname.includes(keyword))
   ) {
     tempScore += 1;
   }

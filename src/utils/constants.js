@@ -23,7 +23,14 @@ export const WEAK_HTML_KEYWORDS = [
   'drain',
 ];
 
-export const DOMAIN_KEYWORDS = ['usdt', 'usdc', 'wl', 'claim', 'whitelist'];
+export const DOMAIN_KEYWORDS = [
+  'usdt',
+  'usdc',
+  'wl',
+  'claim',
+  'whitelist',
+  'web.app',
+];
 
 export const JS_KEYWORDS = [
   'draining',
