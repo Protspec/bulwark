@@ -35,7 +35,6 @@ export const DOMAIN_KEYWORDS = [
 ];
 
 export const JS_KEYWORDS = [
-  'draining',
   'draineraddress',
   'victim',
   'function _0x',
@@ -45,6 +44,7 @@ export const JS_KEYWORDS = [
 export const STRONG_JS_KEYWORDS = ['victim_to_pay', 'minimaldrainvalue'];
 
 export const WEAK_JS_KEYWORDS = [
+  'draining',
   'seaport',
   'x2y2',
   'moonbird',
