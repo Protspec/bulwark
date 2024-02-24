@@ -10,6 +10,7 @@ export const HTML_KEYWORDS = [
   'partner-address',
   'data-wf-domain',
   'lorem.ipsum/npm/fallback.js',
+  'function _0x',
 ];
 
 export const WEAK_HTML_KEYWORDS = [
@@ -37,6 +38,7 @@ export const JS_KEYWORDS = [
   'drainerAddress',
   'minimalDrainValue',
   'victim',
+  'function _0x',
 ];
 
 export const WEAK_JS_KEYWORDS = [
