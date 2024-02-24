@@ -274,6 +274,22 @@ const getUpdatedConditions = (
   content
 ) => {
   let tempScore = 0;
+  let domain = '';
+
+  const parts = hostname.split('.');
+
+  if (parts.length > 2) {
+    if (
+      parts[parts.length - 2].length <= 3 &&
+      parts[parts.length - 1].length === 2
+    ) {
+      domain = parts.slice(parts.length - 3).join('.');
+    } else {
+      domain = parts.slice(parts.length - 2).join('.');
+    }
+  } else {
+    domain = hostname;
+  }
 
   if (
     hostname &&
@@ -313,7 +329,7 @@ const getUpdatedConditions = (
 
   if (
     (metaTags[0] !== null &&
-      !metaTags[0].includes(hostname) &&
+      !metaTags[0].includes(domain) &&
       metaTags[0] !== '/') ||
     false
   ) {
