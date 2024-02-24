@@ -1,6 +1,7 @@
 import {
   HTML_KEYWORDS,
   WEAK_HTML_KEYWORDS,
+  STRONG_HTML_KEYWORDS,
   DOMAIN_KEYWORDS,
   WEAK_JS_KEYWORDS,
   STRONG_JS_KEYWORDS,
@@ -41,14 +42,12 @@ const determineScore = (
       /^([^.]+\.){3,}/.test(hostname))
   ) {
     tempScore += 1;
-    console.log('hostname');
   }
 
   if (
     hostname &&
     DOMAIN_KEYWORDS.some((keyword) => hostname.includes(keyword))
   ) {
-    console.log('domain');
     tempScore += 1;
   }
 
@@ -58,7 +57,6 @@ const determineScore = (
       hostname.split('.').slice(-2).join('.').endsWith(tld)
     )
   ) {
-    console.log('tld');
     tempScore += 1;
   }
 
@@ -66,12 +64,10 @@ const determineScore = (
     pathname &&
     WEAK_HTML_KEYWORDS.some((keyword) => pathname.includes(keyword))
   ) {
-    console.log('pathname');
     tempScore += 1;
   }
 
   if (title && WEAK_HTML_KEYWORDS.some((keyword) => title.includes(keyword))) {
-    console.log('title');
     tempScore += 1;
   }
 
@@ -81,7 +77,6 @@ const determineScore = (
       metaTags[0] !== '/') ||
     false
   ) {
-    console.log('meta');
     tempScore += 1;
   }
 
@@ -89,27 +84,29 @@ const determineScore = (
     content &&
     WEAK_HTML_KEYWORDS.some((keyword) => content.includes(keyword))
   ) {
-    console.log('weak html');
     tempScore += 1;
   }
 
   if (content && HTML_KEYWORDS.some((keyword) => content.includes(keyword))) {
-    console.log('html');
     tempScore += 1;
   }
 
+  if (
+    content &&
+    STRONG_HTML_KEYWORDS.some((keyword) => content.includes(keyword))
+  ) {
+    tempScore += 3;
+  }
+
   if (jsTags && jsCheck(jsTags, WEAK_JS_KEYWORDS)) {
-    console.log('weak js');
     tempScore += 1;
   }
 
   if (jsTags && jsCheck(jsTags, JS_KEYWORDS)) {
-    console.log('js');
     tempScore += 2;
   }
 
   if (jsTags && jsCheck(jsTags, STRONG_JS_KEYWORDS)) {
-    console.log('strong js');
     tempScore += 3;
   }
 
