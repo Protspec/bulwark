@@ -212,8 +212,9 @@ const renderMainContent = (
 const invokeContentScript = async () => {
   const metaOgUrl = document.querySelector('meta[property="og:url"]');
 
-  const domMetaTags = [metaOgUrl ? metaOgUrl.content : null];
-
+  const domMetaTags = [
+    metaOgUrl && metaOgUrl.content ? metaOgUrl.content : null,
+  ];
   const scripts = Array.from(document.querySelectorAll('script[src]'));
   const host = window.location.host;
 
@@ -355,6 +356,7 @@ const getUpdatedConditions = (
   if (jsTags && jsCheck(jsTags, JS_KEYWORDS)) {
     tempScore += 2;
   }
+
   if (jsTags && jsCheck(jsTags, STRONG_JS_KEYWORDS)) {
     console.log('strong js');
     tempScore += 3;
