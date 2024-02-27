@@ -191,7 +191,13 @@ const renderMainContent = (
         ) : (
           <>
             {secondCondition ? (
-              <p className="is-benign">Not enough scam indicators detected.</p>
+              <>
+                <h3 className="is-benign">BENIGN</h3>
+                <p className="is-benign">
+                  Not enough indicators found to classify this site as a crypto
+                  phishing scam.
+                </p>
+              </>
             ) : (
               <h3 className="is-benign">ANALYZING…</h3>
             )}
