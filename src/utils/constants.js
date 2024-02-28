@@ -24,7 +24,6 @@ export const WEAK_HTML_KEYWORDS = [
   'limited time',
   'embrace',
   'kindly',
-  'poor',
   'victim',
   'drain',
   'web.archive.org',
@@ -49,13 +48,16 @@ export const JS_KEYWORDS = [
   'enter your private key',
   'enter your recovery phrase',
   '#privatekey',
+  'static async[T(',
 ];
 
 export const STRONG_JS_KEYWORDS = [
   'victim_to_pay',
   'minimaldrainvalue',
   'useWarningBypass1',
-  "require('@redacted/enterprise-plugin",
+  '@redacted/enterprise-plugin',
+  'debugger;',
+  'debugger ;',
 ];
 
 export const WEAK_JS_KEYWORDS = [
