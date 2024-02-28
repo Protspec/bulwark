@@ -76,19 +76,6 @@ h3.is-scam {
   animation-duration: 1.5s;
 }
 
-p.is-scam {
-  margin: 16px 0;
-  text-align: center;
-  font-size: 16px;
-}
-
-p.is-benign {
-  margin: 8px 0 16px;
-  text-align: center;
-  font-size: 16px;
-  font-weight: 600;
-}
-
 h1.domain {
   margin: 16px auto;
   font-size: 16px;
@@ -136,6 +123,12 @@ h1.domain span {
 
 .explanation {
   margin: 0 16px;
+}
+
+.explanation p {
+  margin: 16px 0;
+  text-align: center;
+  font-size: 16px;
 }
 
 .footer {

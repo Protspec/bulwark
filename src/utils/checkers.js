@@ -37,11 +37,14 @@ const determineScore = (
 
   if (
     hostname &&
-    (hostname.split('.').some((part) => /-/.test(part)) ||
-      WEAK_HTML_KEYWORDS.some((keyword) => hostname.includes(keyword)) ||
+    (WEAK_HTML_KEYWORDS.some((keyword) => hostname.includes(keyword)) ||
       /^([^.]+\.){3,}/.test(hostname))
   ) {
     tempScore += 1;
+  }
+
+  if (hostname && hostname.split('.').some((part) => /-/.test(part))) {
+    tempScore += 2;
   }
 
   if (
