@@ -27,6 +27,7 @@ export const WEAK_HTML_KEYWORDS = [
   'poor',
   'victim',
   'drain',
+  'web.archive.org',
 ];
 
 export const DOMAIN_KEYWORDS = [
@@ -50,12 +51,17 @@ export const JS_KEYWORDS = [
   '#privatekey',
 ];
 
-export const STRONG_JS_KEYWORDS = ['victim_to_pay', 'minimaldrainvalue'];
+export const STRONG_JS_KEYWORDS = [
+  'victim_to_pay',
+  'minimaldrainvalue',
+  'useWarningBypass1',
+  "require('@redacted/enterprise-plugin",
+];
 
 export const WEAK_JS_KEYWORDS = [
   'draining',
   'seaport',
-  'x2y2',
+  'x2y2', // may appear in hashes
   'moonbird',
   'moon_bird',
   'cryptopunk',
@@ -86,4 +92,5 @@ export const TLD_KEYWORDS = [
   '.estate',
   '.digital',
   '.support',
+  '.nl',
 ];
