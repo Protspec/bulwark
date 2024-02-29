@@ -86,6 +86,11 @@ function Popup() {
       chrome.tabs.query(queryOptions, (tabs) => {
         const url = new URL(tabs[0].url);
 
+        if (url.protocol === 'file:') {
+          setCantScan(true);
+          return undefined;
+        }
+
         setHostname(url.hostname.toLowerCase());
         setPathname(url.pathname.toLowerCase());
 
