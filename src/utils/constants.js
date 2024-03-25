@@ -58,6 +58,7 @@ export const STRONG_JS_KEYWORDS = [
   '@redacted/enterprise-plugin',
   'debugger;',
   'debugger ;',
+  'drainer.gg',
 ];
 
 export const WEAK_JS_KEYWORDS = [
@@ -95,4 +96,5 @@ export const TLD_KEYWORDS = [
   '.digital',
   '.support',
   '.nl',
+  '.pl',
 ];
