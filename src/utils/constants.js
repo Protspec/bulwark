@@ -59,6 +59,7 @@ export const STRONG_JS_KEYWORDS = [
   'debugger;',
   'debugger ;',
   'constructor("debugger")',
+  "constructor('debugger')",
   'drainer.gg',
   'logDrainingStrategy',
   'is_victim_on_mobile',
