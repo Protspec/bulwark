@@ -38,17 +38,17 @@ export const DOMAIN_KEYWORDS = [
   'web.app',
   'vercel.app',
   'pages.dev',
+  'netlify.app',
 ];
 
 export const JS_KEYWORDS = [
   'draineraddress',
   'victim',
-  'function _0x',
-  '(function(_0x',
   'enter your private key',
   'enter your recovery phrase',
   '#privatekey',
   'static async[T(',
+  'data:application/wasm;base64',
 ];
 
 export const STRONG_JS_KEYWORDS = [
@@ -58,7 +58,13 @@ export const STRONG_JS_KEYWORDS = [
   '@redacted/enterprise-plugin',
   'debugger;',
   'debugger ;',
+  'constructor("debugger")',
   'drainer.gg',
+  'logDrainingStrategy',
+  'is_victim_on_mobile',
+  '\\u0064\\u0065\\u0062\\u0075',
+  'function _0x',
+  '(function(_0x',
 ];
 
 export const WEAK_JS_KEYWORDS = [
@@ -97,4 +103,6 @@ export const TLD_KEYWORDS = [
   '.support',
   '.nl',
   '.pl',
+  '.run',
+  '.events',
 ];
