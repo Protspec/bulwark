@@ -4,7 +4,6 @@ import logo from '../../assets/img/logo.svg';
 import skull from '../../assets/img/skull.svg';
 import textSkull from '../../assets/img/text-skull.svg';
 import determineScore from '../../utils/checkers';
-import fetchBlocklist from '../../utils/blocklist';
 import { PHISH_THRESHOLD } from '../../utils/constants';
 import DisableDevtool from 'disable-devtool';
 
@@ -22,12 +21,10 @@ function Popup() {
   const [metaTags, setMetaTags] = useState([null]);
   const [jsTags, setJsTags] = useState(null);
   const [isPhish, setIsPhish] = useState(false);
-  const [blocked, setBlocked] = useState(null);
   const [scamSites, setScamSites] = useState([]);
   const [cantScan, setCantScan] = useState(false);
   const [done, setDone] = useState(false);
 
-  const blocklist = useRef([]);
   const score = useRef(null);
   const started = useRef(false);
   const isIncognito = useRef(true);
@@ -56,15 +53,9 @@ function Popup() {
       content
     );
     score.current = determinedScore;
-    setBlocked(
-      blocklist.current.some((blockitem) => hostname.includes(blockitem))
-    );
     setIsPhish(determinedScore >= PHISH_THRESHOLD);
 
-    if (
-      (determinedScore >= PHISH_THRESHOLD || blocked) &&
-      !isIncognito.current
-    ) {
+    if (determinedScore >= PHISH_THRESHOLD && !isIncognito.current) {
       if (scamSites.length === 0) {
         chrome.storage.sync.set({ scamSites: [hostname] });
         setScamSites([hostname]);
@@ -109,10 +100,6 @@ function Popup() {
           isIncognito.current = window.incognito;
         });
 
-        fetchBlocklist().then((data) => {
-          blocklist.current = data;
-        });
-
         chrome.storage.sync.get(['scamSites'], (result) => {
           if (result.scamSites) {
             setScamSites(result.scamSites);
@@ -127,23 +114,23 @@ function Popup() {
   }, [score, started]);
 
   useEffect(() => {
-    if (score.current === null && blocklist.current && content && hostname) {
+    if (score.current === null && content && hostname) {
       evaluateUrl();
     }
-  }, [blocklist.current, content, hostname, evaluateUrl]);
+  }, [content, hostname, evaluateUrl]);
 
   return (
-    <div className={`App ${(isPhish || blocked) && 'is-phishing'}`}>
+    <div className={`App ${isPhish && 'is-phishing'}`}>
       <main
         style={{
-          backgroundImage: `url(${(isPhish || blocked) && skull})`,
+          backgroundImage: `url(${isPhish && skull})`,
           backgroundPosition: `center 50px`,
           backgroundSize: `50%`,
         }}
       >
         {cantScan
           ? renderBlockedScan()
-          : renderMainContent(hostname, blocked, isPhish || blocked, done)}
+          : renderMainContent(hostname, isPhish, done)}
       </main>
       <footer className="footer">
         <a href="https://protspec.com" target="_blank" rel="noreferrer">
@@ -171,12 +158,7 @@ const renderBlockedScan = () => {
   );
 };
 
-const renderMainContent = (
-  hostname,
-  blocked,
-  firstCondition,
-  secondCondition
-) => {
+const renderMainContent = (hostname, firstCondition, secondCondition) => {
   return (
     <>
       <h1 className="domain">
@@ -187,9 +169,7 @@ const renderMainContent = (
           <>
             <h3 className="is-scam">DANGER</h3>
             <p className="is-scam">
-              {blocked
-                ? 'This site has been reported as a crypto phishing scam by PhishFort.'
-                : 'Indicators that this site is a crypto phishing scam were detected.'}
+              Indicators that this site is a crypto phishing scam were detected.
             </p>
             <p className="is-scam">Do not interact with this site.</p>
           </>
