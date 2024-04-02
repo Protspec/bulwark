@@ -215,9 +215,7 @@ const invokeContentScript = async () => {
   };
 
   const validScripts = scripts.filter(
-    (script) =>
-      script.src.toLowerCase().includes(host) &&
-      !script.src.toLowerCase().includes('_next')
+    (script) => !script.src.toLowerCase().includes('_next')
   );
 
   const scriptPromises = validScripts.map(fetchScripts);
