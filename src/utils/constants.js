@@ -17,6 +17,7 @@ export const STRONG_HTML_KEYWORDS = [
   'data-savepage-',
   'saved with singlefile',
   'httrack website copier',
+  'window.open(',
 ];
 
 export const WEAK_HTML_KEYWORDS = [
