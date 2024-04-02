@@ -43,7 +43,7 @@ const determineScore = (
     tempScore += 1;
   }
 
-  if (hostname && hostname.split('.').some((part) => /-/.test(part))) {
+  if (domain && domain.split('.').some((part) => /-/.test(part))) {
     tempScore += 2;
   }
 
