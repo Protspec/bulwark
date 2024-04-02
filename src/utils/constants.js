@@ -65,6 +65,7 @@ export const STRONG_JS_KEYWORDS = [
   'logDrainingStrategy',
   'is_victim_on_mobile',
   '\\u0064\\u0065\\u0062\\u0075',
+  '\\x64\\x65\\x62\\x75',
   'function _0x',
   '(function(_0x',
 ];
