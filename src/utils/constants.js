@@ -3,13 +3,13 @@ export const PHISH_THRESHOLD = 3;
 export const TIMEOUT = 4000;
 
 export const HTML_KEYWORDS = [
-  'obfuscation',
+  'function _0x',
+  '(function(_0x',
   'unescape(',
   'partner-address',
   'data-wf-domain',
+  'obfuscation',
   'lorem.ipsum/npm/fallback.js',
-  'function _0x',
-  '(function(_0x',
 ];
 
 export const STRONG_HTML_KEYWORDS = [
@@ -21,53 +21,53 @@ export const STRONG_HTML_KEYWORDS = [
 ];
 
 export const WEAK_HTML_KEYWORDS = [
+  'web.archive.org',
   'unprecedented',
   'limited time',
   'embrace',
   'kindly',
   'victim',
   'drain',
-  'web.archive.org',
 ];
 
 export const DOMAIN_KEYWORDS = [
-  'usdt',
-  'usdc',
-  'wl',
-  'claim',
-  'whitelist',
   'web.app',
   'vercel.app',
   'pages.dev',
   'netlify.app',
+  'wl',
+  'claim',
+  'whitelist',
+  'usdt',
+  'usdc',
 ];
 
 export const JS_KEYWORDS = [
   'draineraddress',
   'victim',
+  'static async[T(',
+  'data:application/wasm;base64',
   'enter your private key',
   'enter your recovery phrase',
   '#privatekey',
-  'static async[T(',
-  'data:application/wasm;base64',
 ];
 
 export const STRONG_JS_KEYWORDS = [
+  '(function(_0x',
+  'function _0x',
   'victim_to_pay',
   'minimaldrainvalue',
   'useWarningBypass1',
+  'logDrainingStrategy',
+  'is_victim_on_mobile',
   '@redacted/enterprise-plugin',
+  '\\u0064\\u0065\\u0062\\u0075',
+  '\\x64\\x65\\x62\\x75',
   'debugger;',
   'debugger ;',
   'constructor("debugger")',
   "constructor('debugger')",
   'drainer.gg',
-  'logDrainingStrategy',
-  'is_victim_on_mobile',
-  '\\u0064\\u0065\\u0062\\u0075',
-  '\\x64\\x65\\x62\\x75',
-  'function _0x',
-  '(function(_0x',
 ];
 
 export const WEAK_JS_KEYWORDS = [
