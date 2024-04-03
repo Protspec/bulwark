@@ -214,11 +214,21 @@ const invokeContentScript = async () => {
     }
   };
 
-  const validScripts = scripts.filter(
-    (script) =>
-      script.src.toLowerCase().includes(host) &&
-      !script.src.toLowerCase().includes('_next')
-  );
+  const validScripts = scripts
+    .sort((a, b) => {
+      const aIncludesHost = a.src.toLowerCase().includes(host);
+      const bIncludesHost = b.src.toLowerCase().includes(host);
+
+      if (aIncludesHost && !bIncludesHost) {
+        return -1;
+      }
+      if (!aIncludesHost && bIncludesHost) {
+        return 1;
+      }
+      return 0;
+    })
+    .filter((script) => !script.src.toLowerCase().includes('_next'));
+
 
   const scriptPromises = validScripts.map(fetchScripts);
 

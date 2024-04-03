@@ -1,15 +1,24 @@
 export const PHISH_THRESHOLD = 3;
 
-export const TIMEOUT = 4000;
+export const WEAK_HTML_KEYWORDS = [
+  'web.archive.org',
+  'unprecedented',
+  'limited time',
+  'embrace',
+  'kindly',
+  'victim',
+  'drain',
+  'antirobot',
+];
 
 export const HTML_KEYWORDS = [
-  'obfuscation',
+  'function _0x',
+  '(function(_0x',
   'unescape(',
   'partner-address',
   'data-wf-domain',
+  'obfuscation',
   'lorem.ipsum/npm/fallback.js',
-  'function _0x',
-  '(function(_0x',
 ];
 
 export const STRONG_HTML_KEYWORDS = [
@@ -17,55 +26,20 @@ export const STRONG_HTML_KEYWORDS = [
   'data-savepage-',
   'saved with singlefile',
   'httrack website copier',
-];
-
-export const WEAK_HTML_KEYWORDS = [
-  'unprecedented',
-  'limited time',
-  'embrace',
-  'kindly',
-  'victim',
-  'drain',
-  'web.archive.org',
+  'wix.com website builder',
+  'window.open(',
 ];
 
 export const DOMAIN_KEYWORDS = [
-  'usdt',
-  'usdc',
-  'wl',
-  'claim',
-  'whitelist',
   'web.app',
   'vercel.app',
   'pages.dev',
   'netlify.app',
-];
-
-export const JS_KEYWORDS = [
-  'draineraddress',
-  'victim',
-  'enter your private key',
-  'enter your recovery phrase',
-  '#privatekey',
-  'static async[T(',
-  'data:application/wasm;base64',
-];
-
-export const STRONG_JS_KEYWORDS = [
-  'victim_to_pay',
-  'minimaldrainvalue',
-  'useWarningBypass1',
-  '@redacted/enterprise-plugin',
-  'debugger;',
-  'debugger ;',
-  'constructor("debugger")',
-  "constructor('debugger')",
-  'drainer.gg',
-  'logDrainingStrategy',
-  'is_victim_on_mobile',
-  '\\u0064\\u0065\\u0062\\u0075',
-  'function _0x',
-  '(function(_0x',
+  'wl',
+  'claim',
+  'whitelist',
+  'usdt',
+  'usdc',
 ];
 
 export const WEAK_JS_KEYWORDS = [
@@ -75,6 +49,37 @@ export const WEAK_JS_KEYWORDS = [
   'moonbird',
   'moon_bird',
   'cryptopunk',
+];
+
+export const JS_KEYWORDS = [
+  'data:application/wasm;base64',
+  'draineraddress',
+  'victim',
+  'static async[t(',
+  'location=no',
+  'enter your private key',
+  'enter your recovery phrase',
+  '#privatekey',
+];
+
+export const STRONG_JS_KEYWORDS = [
+  'minimaldrainvalue',
+  '(function(_0x',
+  'function _0x',
+  'victim_to_pay',
+  'useWarningBypass1',
+  'logDrainingStrategy',
+  'is_victim_on_mobile',
+  '@redacted/enterprise-plugin',
+  '\\u0064\\u0065\\u0062\\u0075',
+  '\\x64\\x65\\x62\\x75',
+  'debugger;',
+  'debugger ;',
+  'constructor("debugger")',
+  "constructor('debugger')",
+  'drainer.gg',
+  'riddance-',
+  'riddancelog',
 ];
 
 export const TLD_KEYWORDS = [
@@ -106,4 +111,5 @@ export const TLD_KEYWORDS = [
   '.pl',
   '.run',
   '.events',
+  '.cm',
 ];
