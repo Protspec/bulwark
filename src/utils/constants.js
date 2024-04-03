@@ -1,6 +1,15 @@
 export const PHISH_THRESHOLD = 3;
 
-export const TIMEOUT = 4000;
+export const WEAK_HTML_KEYWORDS = [
+  'web.archive.org',
+  'unprecedented',
+  'limited time',
+  'embrace',
+  'kindly',
+  'victim',
+  'drain',
+  'antirobot',
+];
 
 export const HTML_KEYWORDS = [
   'function _0x',
@@ -17,17 +26,8 @@ export const STRONG_HTML_KEYWORDS = [
   'data-savepage-',
   'saved with singlefile',
   'httrack website copier',
+  'wix.com website builder',
   'window.open(',
-];
-
-export const WEAK_HTML_KEYWORDS = [
-  'web.archive.org',
-  'unprecedented',
-  'limited time',
-  'embrace',
-  'kindly',
-  'victim',
-  'drain',
 ];
 
 export const DOMAIN_KEYWORDS = [
@@ -42,21 +42,31 @@ export const DOMAIN_KEYWORDS = [
   'usdc',
 ];
 
+export const WEAK_JS_KEYWORDS = [
+  'draining',
+  'seaport',
+  'x2y2', // may appear in hashes
+  'moonbird',
+  'moon_bird',
+  'cryptopunk',
+];
+
 export const JS_KEYWORDS = [
+  'data:application/wasm;base64',
   'draineraddress',
   'victim',
-  'static async[T(',
-  'data:application/wasm;base64',
+  'static async[t(',
+  'location=no',
   'enter your private key',
   'enter your recovery phrase',
   '#privatekey',
 ];
 
 export const STRONG_JS_KEYWORDS = [
+  'minimaldrainvalue',
   '(function(_0x',
   'function _0x',
   'victim_to_pay',
-  'minimaldrainvalue',
   'useWarningBypass1',
   'logDrainingStrategy',
   'is_victim_on_mobile',
@@ -68,15 +78,8 @@ export const STRONG_JS_KEYWORDS = [
   'constructor("debugger")',
   "constructor('debugger')",
   'drainer.gg',
-];
-
-export const WEAK_JS_KEYWORDS = [
-  'draining',
-  'seaport',
-  'x2y2', // may appear in hashes
-  'moonbird',
-  'moon_bird',
-  'cryptopunk',
+  'riddance-',
+  'riddancelog',
 ];
 
 export const TLD_KEYWORDS = [
@@ -108,4 +111,5 @@ export const TLD_KEYWORDS = [
   '.pl',
   '.run',
   '.events',
+  '.cm',
 ];
