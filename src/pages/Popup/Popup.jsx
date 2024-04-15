@@ -43,6 +43,11 @@ function Popup() {
     }
   });
 
+  const clearScamSites = () => {
+    chrome.storage.sync.set({ scamSites: [] });
+    setScamSites([]);
+  };
+
   const evaluateUrl = async () => {
     const determinedScore = determineScore(
       hostname,
@@ -136,7 +141,11 @@ function Popup() {
         <a href="https://protspec.com" target="_blank" rel="noreferrer">
           <img src={logo} className="App-logo" alt="Bulwark logo" />
         </a>
-        <span className="scam-count" data-text="Scams detected">
+        <span
+          className="scam-count"
+          data-text="Scams detected (click to reset)"
+          onClick={clearScamSites}
+        >
           <img src={textSkull} className="count-icon" alt="Skull" />
           <strong>{scamSites && scamSites.length}</strong>
         </span>
