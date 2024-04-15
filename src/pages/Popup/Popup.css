@@ -154,6 +154,7 @@ h1.domain span {
 
 .scam-count {
   position: relative;
+  cursor: pointer;
 }
 
 .scam-count:before {
