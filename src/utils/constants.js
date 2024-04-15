@@ -2,13 +2,10 @@ export const PHISH_THRESHOLD = 3;
 
 export const WEAK_HTML_KEYWORDS = [
   'web.archive.org',
-  'unprecedented',
-  'limited time',
-  'embrace',
-  'kindly',
   'victim',
   'drain',
-  'antirobot',
+  'ico',
+  'index.php',
 ];
 
 export const HTML_KEYWORDS = [
@@ -19,6 +16,8 @@ export const HTML_KEYWORDS = [
   'data-wf-domain',
   'obfuscation',
   'lorem.ipsum/npm/fallback.js',
+  'sweetalert',
+  'window.open(',
 ];
 
 export const STRONG_HTML_KEYWORDS = [
@@ -27,7 +26,6 @@ export const STRONG_HTML_KEYWORDS = [
   'saved with singlefile',
   'httrack website copier',
   'wix.com website builder',
-  'window.open(',
 ];
 
 export const DOMAIN_KEYWORDS = [
@@ -49,6 +47,7 @@ export const WEAK_JS_KEYWORDS = [
   'moonbird',
   'moon_bird',
   'cryptopunk',
+  'location=no',
 ];
 
 export const JS_KEYWORDS = [
@@ -56,7 +55,6 @@ export const JS_KEYWORDS = [
   'draineraddress',
   'victim',
   'static async[t(',
-  'location=no',
   'enter your private key',
   'enter your recovery phrase',
   '#privatekey',
@@ -112,4 +110,5 @@ export const TLD_KEYWORDS = [
   '.run',
   '.events',
   '.cm',
+  '.live',
 ];
