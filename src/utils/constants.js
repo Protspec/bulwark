@@ -33,6 +33,7 @@ export const DOMAIN_KEYWORDS = [
   'vercel.app',
   'pages.dev',
   'netlify.app',
+  'cf-ipfs.com',
   'wl',
   'claim',
   'whitelist',
@@ -58,6 +59,7 @@ export const JS_KEYWORDS = [
   'enter your private key',
   'enter your recovery phrase',
   '#privatekey',
+  'discord.com/api/webhooks/',
 ];
 
 export const STRONG_JS_KEYWORDS = [
@@ -78,6 +80,7 @@ export const STRONG_JS_KEYWORDS = [
   'drainer.gg',
   'riddance-',
   'riddancelog',
+  'wallet info to discord',
 ];
 
 export const TLD_KEYWORDS = [
