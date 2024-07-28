@@ -193,7 +193,12 @@ const renderMainContent = (hostname, firstCondition, secondCondition) => {
                 </p>
               </>
             ) : (
-              <h3 className="is-benign">ANALYZING…</h3>
+              <>
+                <h3 className="is-benign">ANALYZING…</h3>
+                <p className="is-benign">
+                  All site data needs to load before analysis can be completed.
+                </p>
+              </>
             )}
           </>
         )}
@@ -237,7 +242,6 @@ const invokeContentScript = async () => {
       return 0;
     })
     .filter((script) => !script.src.toLowerCase().includes('_next'));
-
 
   const scriptPromises = validScripts.map(fetchScripts);
 
