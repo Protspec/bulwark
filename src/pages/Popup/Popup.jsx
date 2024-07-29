@@ -207,6 +207,7 @@ const renderBlockedScan = () => {
 };
 
 const renderMainContent = (hostname, isPhish, isBlocked, secondCondition) => {
+  let hours = new Date().getHours();
   return (
     <>
       <h1 className="domain">
@@ -224,6 +225,13 @@ const renderMainContent = (hostname, isPhish, isBlocked, secondCondition) => {
                   Not enough indicators found to classify this site as a crypto
                   phishing scam.
                 </p>
+                {hours >= 22 ||
+                  (hours < 4 && (
+                    <p className="is-benign">
+                      It is late. Be mindful of any transactions you sign
+                      tonight.
+                    </p>
+                  ))}
               </>
             ) : (
               <>
