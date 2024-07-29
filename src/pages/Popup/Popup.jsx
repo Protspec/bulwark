@@ -26,6 +26,7 @@ function Popup() {
   const [scamSites, setScamSites] = useState([]);
   const [cantScan, setCantScan] = useState(false);
   const [done, setDone] = useState(false);
+  const [isDisplayingAux, setIsDisplayingAux] = useState(false);
 
   const blocklist = useRef([]);
   const score = useRef(null);
@@ -49,6 +50,10 @@ function Popup() {
   const clearScamSites = () => {
     chrome.storage.sync.set({ scamSites: [] });
     setScamSites([]);
+  };
+
+  const toggleAux = () => {
+    setIsDisplayingAux(!isDisplayingAux);
   };
 
   const evaluateUrl = async () => {
@@ -140,7 +145,13 @@ function Popup() {
 
   return (
     <div className={`App ${(isPhish || isBlocked) && 'is-phishing'}`}>
-      <div className="aux"></div>
+      <div className={`aux ${isDisplayingAux ? 'activated' : ''}`}>
+        <div className={'aux-header'}>
+          <span className="aux-close" onClick={toggleAux}>
+            ×
+          </span>
+        </div>
+      </div>
       <main
         style={{
           backgroundImage: `url(${(isPhish || isBlocked) && skull})`,
@@ -156,7 +167,7 @@ function Popup() {
         <span
           className="settings-button side-icon"
           data-text="Info & Data"
-          onClick={clearScamSites}
+          onClick={toggleAux}
         >
           <span>⚙</span>
         </span>
