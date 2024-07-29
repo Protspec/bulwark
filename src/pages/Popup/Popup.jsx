@@ -4,6 +4,7 @@ import logo from '../../assets/img/logo.svg';
 import skull from '../../assets/img/skull.svg';
 import textSkull from '../../assets/img/text-skull.svg';
 import determineScore from '../../utils/checkers';
+import fetchBlocklist from '../../utils/blocklist';
 import { PHISH_THRESHOLD } from '../../utils/constants';
 import DisableDevtool from 'disable-devtool';
 
@@ -21,10 +22,12 @@ function Popup() {
   const [metaTags, setMetaTags] = useState([null]);
   const [jsTags, setJsTags] = useState(null);
   const [isPhish, setIsPhish] = useState(false);
+  const [isBlocked, setIsBlocked] = useState(null);
   const [scamSites, setScamSites] = useState([]);
   const [cantScan, setCantScan] = useState(false);
   const [done, setDone] = useState(false);
 
+  const blocklist = useRef([]);
   const score = useRef(null);
   const started = useRef(false);
   const isIncognito = useRef(true);
@@ -58,9 +61,15 @@ function Popup() {
       content
     );
     score.current = determinedScore;
+    setIsBlocked(
+      blocklist.current.some((blockitem) => hostname.includes(blockitem))
+    );
     setIsPhish(determinedScore >= PHISH_THRESHOLD);
 
-    if (determinedScore >= PHISH_THRESHOLD && !isIncognito.current) {
+    if (
+      (determinedScore >= PHISH_THRESHOLD || isBlocked) &&
+      !isIncognito.current
+    ) {
       if (scamSites.length === 0) {
         chrome.storage.sync.set({ scamSites: [hostname] });
         setScamSites([hostname]);
@@ -105,6 +114,11 @@ function Popup() {
           isIncognito.current = window.incognito;
         });
 
+        fetchBlocklist().then((data) => {
+          blocklist.current = data;
+          console.log(blocklist.current);
+        });
+
         chrome.storage.sync.get(['scamSites'], (result) => {
           if (result.scamSites) {
             setScamSites(result.scamSites);
@@ -119,23 +133,24 @@ function Popup() {
   }, [score, started]);
 
   useEffect(() => {
-    if (score.current === null && content && hostname) {
+    if (score.current === null && blocklist.current && content && hostname) {
       evaluateUrl();
     }
   }, [content, hostname, evaluateUrl]);
 
   return (
-    <div className={`App ${isPhish && 'is-phishing'}`}>
+    <div className={`App ${(isPhish || isBlocked) && 'is-phishing'}`}>
+      <div className="aux"></div>
       <main
         style={{
-          backgroundImage: `url(${isPhish && skull})`,
+          backgroundImage: `url(${(isPhish || isBlocked) && skull})`,
           backgroundPosition: `center 50px`,
           backgroundSize: `50%`,
         }}
       >
         {cantScan
           ? renderBlockedScan()
-          : renderMainContent(hostname, isPhish, done)}
+          : renderMainContent(hostname, isPhish, isBlocked, done)}
       </main>
       <footer className="footer">
         <span
@@ -180,21 +195,15 @@ const renderBlockedScan = () => {
   );
 };
 
-const renderMainContent = (hostname, firstCondition, secondCondition) => {
+const renderMainContent = (hostname, isPhish, isBlocked, secondCondition) => {
   return (
     <>
       <h1 className="domain">
         <span>{hostname}</span>
       </h1>
       <div className="explanation">
-        {firstCondition ? (
-          <>
-            <h3 className="is-scam">DANGER</h3>
-            <p className="is-scam">
-              Indicators that this site is a crypto phishing scam were detected.
-            </p>
-            <p className="is-scam">Do not interact with this site.</p>
-          </>
+        {isPhish || isBlocked ? (
+          renderDetectedContent(isPhish, isBlocked)
         ) : (
           <>
             {secondCondition ? (
@@ -216,6 +225,20 @@ const renderMainContent = (hostname, firstCondition, secondCondition) => {
           </>
         )}
       </div>
+    </>
+  );
+};
+
+const renderDetectedContent = (isPhish, isBlocked) => {
+  return (
+    <>
+      <h3 className="is-scam">DANGER</h3>
+      <p className="is-scam">
+        {isPhish
+          ? 'Indicators that this site is a crypto phishing scam were detected.'
+          : 'This site is confirmed to be deceiving users into downloading malware.'}
+      </p>
+      <p className="is-scam">Do not interact with this site.</p>
     </>
   );
 };
