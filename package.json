@@ -60,7 +60,11 @@
   "pnpm": {
     "overrides": {
       "@babel/traverse@<7.23.2": ">=7.23.2",
-      "follow-redirects@<1.15.4": ">=1.15.4"
+      "follow-redirects@<1.15.4": ">=1.15.4",
+      "express@<4.19.2": ">=4.19.2",
+      "follow-redirects@<=1.15.5": ">=1.15.6",
+      "ws@>=8.0.0 <8.17.1": ">=8.17.1",
+      "braces@<3.0.3": ">=3.0.3"
     }
   }
 }
