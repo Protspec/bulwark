@@ -145,9 +145,15 @@ function Popup() {
         >
           <span>⚙</span>
         </span>
-        <a href="https://protspec.com" target="_blank" rel="noreferrer">
-          <img src={logo} className="App-logo" alt="Bulwark logo" />
-        </a>
+        <span
+          className="main-cta"
+          data-text="Built by Protspec"
+          onClick={clearScamSites}
+        >
+          <a href="https://protspec.com" target="_blank" rel="noreferrer">
+            <img src={logo} className="App-logo" alt="Bulwark logo" />
+          </a>
+        </span>
         <span
           className="scam-count side-icon"
           data-text="Scams detected (click to reset)"

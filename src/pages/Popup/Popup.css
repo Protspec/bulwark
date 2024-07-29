@@ -144,6 +144,28 @@ h1.domain span {
   left: 4px;
 }
 
+.main-cta:before {
+  content: attr(data-text);
+  position: absolute;
+  bottom: 33px;
+  right: 50%;
+  width: 100px;
+  transform: translateY(-50%) translateX(52px);
+  text-align: center;
+  font-size: 12px;
+  padding: 2px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #e1e1e1;
+  text-shadow: 0 1px 2px #000;
+  opacity: 0;
+  transition: opacity 0.1s ease-in;
+  pointer-events: none;
+}
+
+.main-cta:hover:before {
+  opacity: 1;
+}
+
 .side-icon {
   width: 100px;
   position: relative;
@@ -164,7 +186,7 @@ h1.domain span {
 .settings-button:before {
   content: attr(data-text);
   position: absolute;
-  bottom: 10px;
+  bottom: 19px;
   right: 0;
   width: 100px;
   transform: translateY(-50%);
