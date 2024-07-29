@@ -179,7 +179,7 @@ function Popup() {
       <footer className="footer">
         <span
           className="settings-button side-icon"
-          data-text="Info & Data"
+          data-text="Information"
           onClick={toggleAux}
         >
           <span>⚙</span>
