@@ -138,16 +138,23 @@ function Popup() {
           : renderMainContent(hostname, isPhish, done)}
       </main>
       <footer className="footer">
+        <span
+          className="settings-button side-icon"
+          data-text="Info & Data"
+          onClick={clearScamSites}
+        >
+          <span>⚙</span>
+        </span>
         <a href="https://protspec.com" target="_blank" rel="noreferrer">
           <img src={logo} className="App-logo" alt="Bulwark logo" />
         </a>
         <span
-          className="scam-count"
+          className="scam-count side-icon"
           data-text="Scams detected (click to reset)"
           onClick={clearScamSites}
         >
-          <img src={textSkull} className="count-icon" alt="Skull" />
           <strong>{scamSites && scamSites.length}</strong>
+          <img src={textSkull} className="count-icon" alt="Skull" />
         </span>
       </footer>
     </div>
