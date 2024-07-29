@@ -141,6 +141,7 @@ h1.domain span {
 
 .footer .App-logo {
   position: relative;
+  width: 150px;
   left: 4px;
 }
 
@@ -179,7 +180,7 @@ h1.domain span {
 .settings-button {
   position: relative;
   top: -2px;
-  font-size: 26px;
+  font-size: 28px;
   opacity: 0.5;
 }
 
