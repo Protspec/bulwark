@@ -4,6 +4,7 @@ import logo from '../../assets/img/logo.svg';
 import skull from '../../assets/img/skull.svg';
 import textSkull from '../../assets/img/text-skull.svg';
 import determineScore from '../../utils/checkers';
+import fetchBlocklist from '../../utils/blocklist';
 import { PHISH_THRESHOLD } from '../../utils/constants';
 import DisableDevtool from 'disable-devtool';
 
@@ -21,10 +22,13 @@ function Popup() {
   const [metaTags, setMetaTags] = useState([null]);
   const [jsTags, setJsTags] = useState(null);
   const [isPhish, setIsPhish] = useState(false);
+  const [isBlocked, setIsBlocked] = useState(null);
   const [scamSites, setScamSites] = useState([]);
   const [cantScan, setCantScan] = useState(false);
   const [done, setDone] = useState(false);
+  const [isDisplayingAux, setIsDisplayingAux] = useState(false);
 
+  const blocklist = useRef([]);
   const score = useRef(null);
   const started = useRef(false);
   const isIncognito = useRef(true);
@@ -48,6 +52,10 @@ function Popup() {
     setScamSites([]);
   };
 
+  const toggleAux = () => {
+    setIsDisplayingAux(!isDisplayingAux);
+  };
+
   const evaluateUrl = async () => {
     const determinedScore = determineScore(
       hostname,
@@ -58,9 +66,15 @@ function Popup() {
       content
     );
     score.current = determinedScore;
+    setIsBlocked(
+      blocklist.current.some((blockitem) => hostname.includes(blockitem))
+    );
     setIsPhish(determinedScore >= PHISH_THRESHOLD);
 
-    if (determinedScore >= PHISH_THRESHOLD && !isIncognito.current) {
+    if (
+      (determinedScore >= PHISH_THRESHOLD || isBlocked) &&
+      !isIncognito.current
+    ) {
       if (scamSites.length === 0) {
         chrome.storage.sync.set({ scamSites: [hostname] });
         setScamSites([hostname]);
@@ -105,6 +119,10 @@ function Popup() {
           isIncognito.current = window.incognito;
         });
 
+        fetchBlocklist().then((data) => {
+          blocklist.current = data;
+        });
+
         chrome.storage.sync.get(['scamSites'], (result) => {
           if (result.scamSites) {
             setScamSites(result.scamSites);
@@ -119,35 +137,69 @@ function Popup() {
   }, [score, started]);
 
   useEffect(() => {
-    if (score.current === null && content && hostname) {
+    if (score.current === null && blocklist.current && content && hostname) {
       evaluateUrl();
     }
   }, [content, hostname, evaluateUrl]);
 
   return (
-    <div className={`App ${isPhish && 'is-phishing'}`}>
+    <div className={`App ${(isPhish || isBlocked) && 'is-phishing'}`}>
+      <div className={`aux ${isDisplayingAux ? 'activated' : ''}`}>
+        <div className="aux-header">
+          <span className="aux-close" onClick={toggleAux}>
+            ×
+          </span>
+        </div>
+        <div className="aux-content">
+          <strong>How to use:</strong> Analyze the current site by clicking on
+          the Bulwark extension icon in your toolbar.
+        </div>
+        <div className="aux-content">
+          Join the fight against scams in crypto by supporting Bulwark’s
+          develompent…
+          <p>
+            ETH: <strong>donate.d0wnlore.eth</strong>
+          </p>
+          <p>
+            SOL: <strong>6dqubWkP4bumW4epp9px1</strong>
+          </p>
+        </div>
+      </div>
       <main
         style={{
-          backgroundImage: `url(${isPhish && skull})`,
+          backgroundImage: `url(${(isPhish || isBlocked) && skull})`,
           backgroundPosition: `center 50px`,
           backgroundSize: `50%`,
         }}
       >
         {cantScan
           ? renderBlockedScan()
-          : renderMainContent(hostname, isPhish, done)}
+          : renderMainContent(hostname, isPhish, isBlocked, done)}
       </main>
       <footer className="footer">
-        <a href="https://protspec.com" target="_blank" rel="noreferrer">
-          <img src={logo} className="App-logo" alt="Bulwark logo" />
-        </a>
         <span
-          className="scam-count"
+          className="settings-button side-icon"
+          data-text="Information"
+          onClick={toggleAux}
+        >
+          <span>⚙</span>
+        </span>
+        <span
+          className="main-cta"
+          data-text="Built by Protspec"
+          onClick={clearScamSites}
+        >
+          <a href="https://protspec.com" target="_blank" rel="noreferrer">
+            <img src={logo} className="App-logo" alt="Bulwark logo" />
+          </a>
+        </span>
+        <span
+          className="scam-count side-icon"
           data-text="Scams detected (click to reset)"
           onClick={clearScamSites}
         >
-          <img src={textSkull} className="count-icon" alt="Skull" />
           <strong>{scamSites && scamSites.length}</strong>
+          <img src={textSkull} className="count-icon" alt="Skull" />
         </span>
       </footer>
     </div>
@@ -167,21 +219,16 @@ const renderBlockedScan = () => {
   );
 };
 
-const renderMainContent = (hostname, firstCondition, secondCondition) => {
+const renderMainContent = (hostname, isPhish, isBlocked, secondCondition) => {
+  let hours = new Date().getHours();
   return (
     <>
       <h1 className="domain">
         <span>{hostname}</span>
       </h1>
       <div className="explanation">
-        {firstCondition ? (
-          <>
-            <h3 className="is-scam">DANGER</h3>
-            <p className="is-scam">
-              Indicators that this site is a crypto phishing scam were detected.
-            </p>
-            <p className="is-scam">Do not interact with this site.</p>
-          </>
+        {isPhish || isBlocked ? (
+          renderDetectedContent(isPhish, isBlocked)
         ) : (
           <>
             {secondCondition ? (
@@ -191,13 +238,39 @@ const renderMainContent = (hostname, firstCondition, secondCondition) => {
                   Not enough indicators found to classify this site as a crypto
                   phishing scam.
                 </p>
+                {hours >= 22 ||
+                  (hours < 4 && (
+                    <p className="is-benign">
+                      It is late. Be mindful of any transactions you sign
+                      tonight.
+                    </p>
+                  ))}
               </>
             ) : (
-              <h3 className="is-benign">ANALYZING…</h3>
+              <>
+                <h3 className="is-benign">ANALYZING…</h3>
+                <p className="is-benign">
+                  All site data needs to load before analysis can be completed.
+                </p>
+              </>
             )}
           </>
         )}
       </div>
+    </>
+  );
+};
+
+const renderDetectedContent = (isPhish, isBlocked) => {
+  return (
+    <>
+      <h3 className="is-scam">DANGER</h3>
+      <p className="is-scam">
+        {isPhish
+          ? 'Indicators that this site is a crypto phishing scam were detected.'
+          : 'This site is confirmed to be deceiving users into downloading malware.'}
+      </p>
+      <p className="is-scam">Do not interact with this site.</p>
     </>
   );
 };
@@ -237,7 +310,6 @@ const invokeContentScript = async () => {
       return 0;
     })
     .filter((script) => !script.src.toLowerCase().includes('_next'));
-
 
   const scriptPromises = validScripts.map(fetchScripts);
 
