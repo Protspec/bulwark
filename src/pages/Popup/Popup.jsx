@@ -145,10 +145,24 @@ function Popup() {
   return (
     <div className={`App ${(isPhish || isBlocked) && 'is-phishing'}`}>
       <div className={`aux ${isDisplayingAux ? 'activated' : ''}`}>
-        <div className={'aux-header'}>
+        <div className="aux-header">
           <span className="aux-close" onClick={toggleAux}>
             ×
           </span>
+        </div>
+        <div className="aux-content">
+          <strong>How to use:</strong> Analyze the current site by clicking on
+          the Bulwark extension icon in your toolbar.
+        </div>
+        <div className="aux-content">
+          Join the fight against scams in crypto by supporting Bulwark’s
+          develompent…
+          <p>
+            ETH: <strong>donate.d0wnlore.eth</strong>
+          </p>
+          <p>
+            SOL: <strong>6dqubWkP4bumW4epp9px1</strong>
+          </p>
         </div>
       </div>
       <main
