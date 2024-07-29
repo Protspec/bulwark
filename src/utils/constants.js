@@ -39,6 +39,7 @@ export const DOMAIN_KEYWORDS = [
   'whitelist',
   'usdt',
   'usdc',
+  '-zoom',
 ];
 
 export const WEAK_JS_KEYWORDS = [
@@ -54,6 +55,7 @@ export const WEAK_JS_KEYWORDS = [
 export const JS_KEYWORDS = [
   'data:application/wasm;base64',
   'draineraddress',
+  'cachedDrainedAssets',
   'victim',
   'static async[t(',
   'enter your private key',
