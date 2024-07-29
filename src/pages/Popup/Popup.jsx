@@ -121,7 +121,6 @@ function Popup() {
 
         fetchBlocklist().then((data) => {
           blocklist.current = data;
-          console.log(blocklist.current);
         });
 
         chrome.storage.sync.get(['scamSites'], (result) => {
